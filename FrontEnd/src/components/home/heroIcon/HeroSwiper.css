@@ -1,0 +1,33 @@
+.swiper-pagination-bullet {
+    background-color: rgba(255, 255, 255, 0.6); /* Default color */
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+    border-radius: 50%;
+  }
+  
+  .swiper-pagination-bullet-active {
+    background-color: white; /* Active dot color */
+  }
+/* Custom Navigation Buttons */
+.swiper-button-prev,
+.swiper-button-next {
+  background-color: #D4AF37; /* Gold background */
+  width: 50px; /* Reduced size */
+  height: 50px; /* Reduced size */
+  border-radius: 50%; /* Circle shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+}
+
+
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  display: none; /* Hide default Swiper arrows */
+}

@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* width for slider */
+
+
+
+a.active {
+  border-bottom: 2px solid var(--line-primary);
+}
+
