@@ -5,7 +5,7 @@ pipeline {
         DOCKER_CONTAINER = "elegance"
         DOCKER_IMAGE = 'adhamgamal22/elegance'
         GIT_REPO = 'https://github.com/HebaAli48/fashionECommerce.git'
-        BRANCH = 'feature/devops-01-jenkins-pipeline'
+        BRANCH = 'feature/devops-01-init-jenkins-pipeline'
         DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
         SSH_CREDENTIALS = 'ssh-credentials'
         DROPLET_IP = '206.81.28.37'
