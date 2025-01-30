@@ -19,18 +19,18 @@ pipeline {
             }
         }
 
-        stage('Step 2: Install Dependencies & Build Frontend') { 
+        stage('Step 2: Install Dependencies & Build FrontEnd') { 
             steps {
                 script {
                     try {
-                        echo 'Navigating to the Frontend directory...'
-                        dir('Frontend') {
+                        echo 'Navigating to the FrontEnd directory...'
+                        dir('FrontEnd') {
                             sh 'npm install'
                             sh 'npm run build'
-                            echo 'Frontend build completed successfully.'
+                            echo 'FrontEnd build completed successfully.'
                         }
                     } catch (Exception e) {
-                        error "Frontend build failed: ${e.message}"
+                        error "FrontEnd build failed: ${e.message}"
                     }
                 }
             }
