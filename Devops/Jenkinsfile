@@ -12,22 +12,25 @@ pipeline {
     }
 
     stages {
-        stage('Step 1: Checkout Code') { 
+        stage('Step 1: Checkout Code from GitHub') { 
             steps {
                 echo 'Checking out code from GitHub...'
                 git branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        stage('Step 2: Build WAR') { 
+        stage('Step 2: Install Dependencies & Build Frontend') { 
             steps {
                 script {
                     try {
-                        sh 'npm install'
-                        sh 'npm run build'
-                        echo 'Project Build Completed'
+                        echo 'Navigating to the Frontend directory...'
+                        dir('Frontend') {
+                            sh 'npm install'
+                            sh 'npm run build'
+                            echo 'Frontend build completed successfully.'
+                        }
                     } catch (Exception e) {
-                        error "Build failed: ${e.message}"
+                        error "Frontend build failed: ${e.message}"
                     }
                 }
             }
@@ -36,7 +39,7 @@ pipeline {
         stage('Step 3: Build Docker Image') { 
             steps {
                 script {
-                    echo 'Building Docker image using existing Dockerfile...'
+                    echo 'Building Docker image using the Dockerfile...'
                     sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
@@ -56,10 +59,10 @@ pipeline {
             }
         }
 
-        stage('Step 5: SSH to Droplet and Deploy') { 
+        stage('Step 5: Deploy Docker Image on Droplet') { 
             steps {
                 script {
-                    echo 'Connecting to Droplet and deploying...'
+                    echo 'Connecting to Droplet and deploying the Docker container...'
                     sshagent([SSH_CREDENTIALS]) {
                         sh """
                             ssh -o StrictHostKeyChecking=no root@${DROPLET_IP} '
