@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CONTAINER = "elegance"
-        DOCKER_IMAGE = 'adhamgamal22/elegance'
+        DOCKER_CONTAINER = "fashionECommerce"
+        DOCKER_IMAGE = 'adhamgamal22/fashionECommerce'
         GIT_REPO = 'https://github.com/HebaAli48/fashionECommerce.git'
         BRANCH = 'feature/devops-01-init-jenkins-pipeline'
         DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
