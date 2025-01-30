@@ -1,0 +1,82 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_CONTAINER = "elegance"
+        DOCKER_IMAGE = 'adhamgamal22/elegance'
+        GIT_REPO = 'https://github.com/HebaAli48/fashionECommerce.git'
+        BRANCH = 'feature/devops-01-jenkins-pipeline'
+        DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
+        SSH_CREDENTIALS = 'ssh-credentials'
+        DROPLET_IP = '206.81.28.37'
+    }
+
+    stages {
+        stage('Step 1: Checkout Code') { 
+            steps {
+                echo 'Checking out code from GitHub...'
+                git branch: "${BRANCH}", url: "${GIT_REPO}"
+            }
+        }
+
+        stage('Step 2: Build WAR') { 
+            steps {
+                script {
+                    try {
+                        sh 'npm install'
+                        sh 'npm run build'
+                        echo 'Project Build Completed'
+                    } catch (Exception e) {
+                        error "Build failed: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Step 3: Build Docker Image') { 
+            steps {
+                script {
+                    echo 'Building Docker image using existing Dockerfile...'
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Step 4: Push Docker Image to Docker Hub') { 
+            steps {
+                script {
+                    echo 'Pushing Docker image to Docker Hub...'
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Step 5: SSH to Droplet and Deploy') { 
+            steps {
+                script {
+                    echo 'Connecting to Droplet and deploying...'
+                    sshagent([SSH_CREDENTIALS]) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no root@${DROPLET_IP} '
+                                if ! command -v docker &> /dev/null; then
+                                    echo "Installing Docker..."
+                                    apt-get update && apt-get install -y docker.io
+                                fi
+                                echo "Pulling Docker image..."
+                                docker pull ${DOCKER_IMAGE}
+                                echo "Running the container..."
+                                docker stop ${DOCKER_CONTAINER} || true && docker rm ${DOCKER_CONTAINER} || true
+                                docker run -d --name ${DOCKER_CONTAINER} -p 80:8080 ${DOCKER_IMAGE}
+                            '
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
