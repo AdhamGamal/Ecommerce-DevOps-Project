@@ -74,7 +74,7 @@ pipeline {
                                 docker pull ${DOCKER_IMAGE}
                                 echo "Running the container..."
                                 docker stop ${DOCKER_CONTAINER} || true && docker rm ${DOCKER_CONTAINER} || true
-                                docker run -d --name ${DOCKER_CONTAINER} -p 80:8080 ${DOCKER_IMAGE}
+                                docker run -d --name ${DOCKER_CONTAINER} -p 80:80 ${DOCKER_IMAGE}
                             '
                         """
                     }
