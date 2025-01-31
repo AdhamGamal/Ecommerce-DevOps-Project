@@ -9,7 +9,6 @@ RUN rm -rf ./*
 
 # Copy only the built frontend files from Jenkins workspace
 COPY ../FrontEnd/dist ./
-COPY ../FrontEnd/build ./
 
 # Expose port 80
 EXPOSE 80
