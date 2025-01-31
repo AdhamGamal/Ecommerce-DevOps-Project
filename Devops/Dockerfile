@@ -8,8 +8,8 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
 # Copy only the built frontend files from Jenkins workspace
-COPY dist .
-COPY build .
+COPY ../FrontEnd/dist ./
+COPY ../FrontEnd/build ./
 
 # Expose port 80
 EXPOSE 80
