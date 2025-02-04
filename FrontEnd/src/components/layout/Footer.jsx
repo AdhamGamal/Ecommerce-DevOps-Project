@@ -46,7 +46,7 @@ const Footer = () => {
                     </li>
                     <li>
                       <a
-                        href="/services"
+                        href="/store"
                         className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
                       >
                         Store
@@ -54,7 +54,7 @@ const Footer = () => {
                     </li>
                     <li>
                       <a
-                        href="/contact"
+                        href="/contact-us"
                         className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
                       >
                         Contact

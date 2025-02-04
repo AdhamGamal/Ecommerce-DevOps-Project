@@ -76,7 +76,7 @@ const Header = () => {
             </li>
             <li>
               <Link
-                to="/contact"
+                to="/contact-us"
                 className="block py-2 hover:text-secondary-color rounded px-4"
               >
                 Contact
