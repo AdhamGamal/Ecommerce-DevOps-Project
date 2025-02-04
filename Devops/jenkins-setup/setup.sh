@@ -2,7 +2,7 @@ docker network create jenkins
 
 docker run \
   --name jenkins-docker \
-  --rm \
+  --restart=unless-stopped \
   --detach \
   --privileged \
   --network jenkins \
@@ -18,7 +18,7 @@ docker build -t myjenkins-blueocean .
 
 docker run \
   --name jenkins-blueocean \
-  --restart=on-failure \
+  --restart=unless-stopped \
   --detach \
   --network jenkins \
   --env DOCKER_HOST=tcp://docker:2376 \
