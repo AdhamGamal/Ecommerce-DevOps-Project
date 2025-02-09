@@ -112,5 +112,5 @@ const WishListItem = () => {
     </div>
   );
 };
-
+// d
 export default WishListItem;
