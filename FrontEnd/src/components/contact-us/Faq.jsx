@@ -4,6 +4,7 @@ import cancel from "../../assets/images/cancel.png";
 import returnImg from "../../assets/images/return.png"; // Renamed to avoid conflict with reserved keywords
 import track from "../../assets/images/track.png";
 import { Cart } from "../../utils/Icons";
+import formBg from "../../assets/images/formBgRev.png";
 
 const services = [
   {
@@ -78,40 +79,54 @@ const Faq = () => {
   };
 
   return (
-    <div className=" text-black py-8 h-[500px]">
-      <div className="container mx-auto px-4">
-        <h3 className="text-2xl font-semibold text-center mb-6 text-secondary-color">
-          Our Online Services
-        </h3>
-        <div className="space-y-4">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="p-4 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition"
-            >
-              <div
-                className="flex items-center justify-between cursor-pointer"
-                onClick={() => toggleService(service.id)}
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={service.imgSrc}
-                    alt={service.question}
-                    className="w-10 h-10 object-contain"
-                  />
-                  <span className="text-lg font-medium">
-                    {service.question}
-                  </span>
+    <div
+      id="faq"
+      className=" w-full mx-auto p-6 shadow-lg relative"
+      style={{
+        backgroundImage: `url(${formBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Overlay with opacity */}
+      <div className="absolute inset-0 bg-light-color bg-opacity-95"></div>
+      <div className="relative z-10">
+        <div className=" text-black pb-8 h-[500px]">
+          <div className="container mx-auto px-4">
+            <h3 className="text-2xl font-semibold text-center mb-6 text-secondary-color">
+              Quick Assist
+            </h3>
+            <div className="space-y-4">
+              {services.map((service) => (
+                <div
+                  key={service.id}
+                  className="p-4 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition"
+                >
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => toggleService(service.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={service.imgSrc}
+                        alt={service.question}
+                        className="w-10 h-10 object-contain"
+                      />
+                      <span className="text-lg font-medium">
+                        {service.question}
+                      </span>
+                    </div>
+                    <span>
+                      {activeService === service.id ? openedIcon : closedIcon}
+                    </span>
+                  </div>
+                  {activeService === service.id && (
+                    <p className="mt-4 text-gray-700">{service.answer}</p>
+                  )}
                 </div>
-                <span>
-                  {activeService === service.id ? openedIcon : closedIcon}
-                </span>
-              </div>
-              {activeService === service.id && (
-                <p className="mt-4 text-gray-700">{service.answer}</p>
-              )}
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>

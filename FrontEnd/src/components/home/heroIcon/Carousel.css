@@ -1,10 +1,10 @@
-/* Custom Navigation Buttons */
+/* 
 .swiper-button-prev,
 .swiper-button-next {
-  background-color: #D4AF37; /* Gold background */
-  width: 50px; /* Reduced size */
-  height: 50px; /* Reduced size */
-  border-radius: 50%; /* Circle shape */
+  background-color: #D4AF37;
+  width: 50px; 
+  height: 50px; 
+  border-radius: 50%; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,20 +16,20 @@
 }
 
 .swiper-button-prev {
-  left: 10px; /* Position from the left */
+  left: 10px;
 }
 
 .swiper-button-next {
-  right: 10px; /* Position from the right */
+  right: 10px;
 }
 
 .swiper-button-prev::after,
 .swiper-button-next::after {
-  display: none; /* Hide default Swiper arrows */
+  display: none; 
 }
 
 .arrow-circle {
   display: flex;
   align-items: center;
   justify-content: center;
-}
+} */

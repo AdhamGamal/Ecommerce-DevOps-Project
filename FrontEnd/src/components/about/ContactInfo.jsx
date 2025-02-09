@@ -1,10 +1,7 @@
 import React from "react";
-import img1 from "../../assets/images/abdelrahman.jpg";
-import img2 from "../../assets/images/aayman.jpg";
+
 import img3 from "../../assets/images/heba.jpg";
-import img4 from "../../assets/images/mariam.jpg";
-import img5 from "../../assets/images/hossam.jpg";
-import img6 from "../../assets/images/abdallah.jpg";
+
 import female from "../../assets/images/female.jpg";
 import male from "../../assets/images/male.jpg";
 import imgContact from "../../assets/images/contact3.png";

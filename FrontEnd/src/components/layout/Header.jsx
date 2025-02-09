@@ -17,37 +17,39 @@ const Header = () => {
   }, []);
 
   return (
-    <header className=" text-text-color shadow-lg bg-back-color">
-      <div className="container mx-auto flex justify-between items-center p-4">
-        {/* Logo with Shape Background */}
-        <WebLogo />
+    <header className="text-text-color shadow-lg bg-back-color">
+      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center p-4">
+        {/* Logo and Hamburger Menu */}
+        <div className="flex justify-between items-center w-full md:w-auto">
+          <WebLogo />
 
-        {/* Hamburger Menu for Mobile */}
-        <button
-          className="md:hidden p-2 focus:outline-none"
-          onClick={toggleMenu}
-        >
-          <svg
-            className="w-6 h-6 text-secondary-color"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+          {/* Hamburger Menu for Mobile */}
+          <button
+            className="md:hidden p-2 focus:outline-none"
+            onClick={toggleMenu}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 6h16M4 12h16m-7 6h7"
-            ></path>
-          </svg>
-        </button>
+            <svg
+              className="w-6 h-6 text-secondary-color"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"
+              ></path>
+            </svg>
+          </button>
+        </div>
 
         {/* Navigation Links */}
         <nav
           className={`${
             isMenuOpen ? "block" : "hidden"
-          } md:flex md:items-center w-full md:w-auto`}
+          } md:flex md:items-center w-full md:w-auto mt-4 md:mt-0 border-t border-gray-200 md:border-none`}
         >
           <ul className="flex flex-col md:flex-row md:space-x-6 mt-4 md:mt-0">
             <li>
@@ -86,12 +88,10 @@ const Header = () => {
         </nav>
 
         {/* Wishlist, Cart, and User Avatar */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-6 mt-4 md:mt-0">
           {/* Wishlist Icon */}
-          <Link to="/wishlist" className="relative  hover:scale-105">
+          <Link to="/wishlist" className="relative hover:scale-105">
             {WishList}
-
-            {/* <FaHeart className="w-6 h-6 text-secondary-color hover:text-white transition-colors duration-300" /> */}
             <span className="absolute -top-2 -right-2 bg-dark-secondary-color text-white text-xs rounded-full px-1">
               3
             </span>
@@ -100,8 +100,6 @@ const Header = () => {
           {/* Cart Icon */}
           <Link to="/cart" className="relative hover:scale-105">
             {Cart}
-
-            {/* <FaShoppingCart className="w-6 h-6 text-secondary-color hover:text-white transition-colors duration-300" /> */}
             <span className="absolute -top-2 -right-2 bg-dark-secondary-color text-white text-xs rounded-full px-1">
               5
             </span>

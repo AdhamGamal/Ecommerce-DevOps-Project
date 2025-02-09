@@ -2,6 +2,7 @@ import React from "react";
 import SocialMedia from "../UI/SocialMedia";
 import { mailIcon, Phone } from "../../utils/Icons";
 import WebLogo from "../UI/WebLogo";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -26,75 +27,60 @@ const Footer = () => {
                 <h3 className="text-xl font-bold mb-6 text-secondary-color text-left">
                   Quick Links
                 </h3>
-                <div className="flex gap-14 ">
-                  <ul className="space-y-3">
-                    <li>
-                      <a
-                        href="/"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Home
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/about"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        About
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/store"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Store
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/contact-us"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Contact
-                      </a>
-                    </li>
-                  </ul>
-                  <ul className="space-y-3">
-                    <li>
-                      <a
-                        href="/privacy-policy"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Privacy Policy
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/terms-of-service"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Terms of Service
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/faq"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        FAQ
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/shipping"
-                        className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
-                      >
-                        Shipping Info
-                      </a>
-                    </li>
-                  </ul>
+                <div className="grid grid-cols-2">
+                  <div className=" flex flex-col space-y-3">
+                    <Link
+                      to="/"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      to="/about"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      About
+                    </Link>
+                    <Link
+                      to="/store"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Store
+                    </Link>
+
+                    <Link
+                      to="/contact-us"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Contact us
+                    </Link>
+                  </div>
+                  <div className=" flex flex-col space-y-3">
+                    <Link
+                      to="/privacy-policy"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Privacy Policy
+                    </Link>
+                    <Link
+                      to="/terms-of-service"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Terms of Service
+                    </Link>
+                    <Link
+                      to="/contact-us#faq"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      FAQ
+                    </Link>
+                    <Link
+                      to="shipping"
+                      className="text-sm text-gray-300 hover:text-secondary-color transition-colors duration-300"
+                    >
+                      Shipping Info
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
