@@ -1,7 +1,8 @@
 const Product = require("../models/Product");
 const AppError = require("../utils/AppError");
+const { deleteFile } = require("../utils/commonUsedFunction");
 const { dataUri } = require("../utils/multer");
-const productImgsCount = 8;
+const path = require("path");
 
 function refineStrings(string) {
   // removing special characters
@@ -14,177 +15,269 @@ function refineStrings(string) {
 }
 
 const getAllProducts = async (req, res, next) => {
-  const Products = await Product.find().sort({ created_at: -1 });
-  const categoryList = Product.schema.path("category").enumValues;
-  res.send({ Products, categoryList });
+  const Products = await Product.find({
+    status: "active",
+  }).sort({ createdAt: -1 });
+  res.status(200).send({
+    message: "All products are retrieved sucessfully",
+    Products,
+  });
 };
 
 const newestProducts = async (req, res, next) => {
-  const newestTenProducts = await Product.find()
-    .sort({ created_at: -1 })
+  const newestTenProducts = await Product.find({
+    status: "active",
+  })
+    .sort({ createdAt: -1 })
     .limit(10);
-  res.send({ newestTenProducts });
-};
-
-const expensiveProducts = async (req, res, next) => {
-  const mostExpensiveProducts = await Product.find()
-    .sort({ price: -1 })
-    .limit(6);
-  res.send({ mostExpensiveProducts });
+  res.status(200).send({
+    message: "Newest 10 products are retrieved sucessfully",
+    newestTenProducts,
+  });
 };
 
 const getProductById = async (req, res, next) => {
   const product_id = req.params.id;
   const product = await Product.findById(product_id);
   if (!product) return next(new AppError("Product Not Found!", 400));
-  res.send(product);
+  res.status(200).send({
+    message: " product  retrieved sucessfully",
+    product,
+  });
 };
-
+// --------------------------------------------------------------------------------------------------------
+/**
+ * create Product
+ */
 const createProduct = async (req, res, next) => {
-  // const { productName, price, vendor, category, description } = req.body;
-  // // 1- recive product_images from the req and send it to multer middleware
-  // // 2- multer send me arr of objects as a req.files
-  // // 3- extract every image and uploade it to cloudinary using dataUri() and uploader.upload()
-  // // 4- return array of [...images url] as a uploadedImages
-  // let uploadedImages = [];
-  // if (req.files && req.files.length > 0) {
-  //   const uploadPromises = req.files.map(async (file) => {
-  //     const buffImage = dataUri(file);
-  //     try {
-  //       const uploadedImage = await uploader.upload(buffImage.content, {
-  //         public_id: file.originalname,
-  //         folder: `products_images/${refineStrings(productName)}_images`,
-  //       });
-  //       return uploadedImage?.secure_url || null;
-  //     } catch (err) {
-  //       return next(
-  //         new AppError(
-  //           `failed to upload image to Cloudnary error is ${err}`,
-  //           500
-  //         )
-  //       );
-  //     }
-  //   });
-  //   // To Await All the Upload Promises To Ensures That All Images are Uploaded Before Proceeding.
-  //   uploadedImages = await Promise.all(uploadPromises);
-  // } else {
-  //   return next(
-  //     new AppError(
-  //       `Must Provide 1 to ${productImgsCount} Images That Descripe The Product`,
-  //       400
-  //     )
-  //   );
-  // }
-  // const createdProduct = await Product.create({
-  //   productName,
-  //   imgsLinks: uploadedImages,
-  //   price,
-  //   vendor,
-  //   category,
-  //   description,
-  // });
-  // if (!createdProduct)
-  //   return next(new AppError("Product Couldn't Be Created", 400));
-  // res.send({
-  //   message: `Product ${productName} Created Successfully!`,
-  //   createdProduct,
-  // });
-};
+  try {
+    const { productName, subCategoryId, vendor, price, description } = req.body;
 
-// The Logic Below Is Designed For The Patch HTTP Method Only.
+    // Handle multiple files
+    const filePaths = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        const filePath = path.join(
+          "uploads",
+          "products",
+          `${req.body.productName}_${req.body.subCategoryId}`,
+          file.filename
+        );
+        filePaths.push(filePath);
+      });
+    }
+
+    // Create a new Product
+    const createdProduct = await Product.create({
+      productName,
+      price,
+      subCategoryId,
+      vendor,
+      price,
+      description,
+      imgsUrls: filePaths,
+    });
+
+    res.status(201).send({
+      message: `Product ${productName} Created Successfully!`,
+      createdProduct,
+    });
+  } catch (error) {
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        const filePath = path.join(
+          "uploads",
+          "products",
+          `${req.body.productName}_${req.body.subCategoryId}`,
+          file.filename
+        );
+        deleteFile(filePath);
+      });
+    }
+    console.error("Error creating Cancelation:", error);
+
+    const errorMsg = error.message || "Error during product creation";
+    return next(new AppError(errorMsg, 400));
+  }
+};
+// --------------------------------------------------------------------------------------------------------
+/**
+ * Edit Product
+ */
+
+// const updateProduct = async (req, res, next) => {
+//   try {
+//     const product_id = req.params.id;
+//     const { productName, subCategoryId, vendor, price, description } = req.body;
+
+//     // Find the product in the database
+//     const product = await Product.findById(product_id);
+//     if (!product) {
+//       return next(
+//         new AppError("Product With The Provided Id Not Found 🤷‍♀️", 404)
+//       );
+//     }
+
+//     const filePaths = [];
+//     if (req.files && req.files.length > 0) {
+//       req.files.forEach((file) => {
+//         const filePath = path.join(
+//           "uploads",
+//           "products",
+//           `${req.body.productName}_${req.body.subCategoryId}`,
+//           file.filename
+//         );
+//         filePaths.push(filePath);
+//       });
+//     }
+//     // Update product in database
+//     const updatedProduct = await Product.findByIdAndUpdate(
+//       product_id,
+//       {
+//         productName,
+//         subCategoryId,
+//         vendor,
+//         price,
+//         description,
+//         imgsUrls: filePaths, // Set updated images
+//       },
+//       { new: true }
+//     );
+
+//     res.status(200).json({
+//       message: `Product ${productName} Updated Successfully!`,
+//       updatedProduct,
+//     });
+//   } catch (error) {
+//     if (req.files && req.files.length > 0) {
+//       req.files.forEach((file) => {
+//         const filePath = path.join(
+//           "uploads",
+//           "products",
+//           `${req.body.productName}_${req.body.subCategoryId}`,
+//           file.filename
+//         );
+//         deleteFile(filePath);
+//       });
+//     }
+//     console.error("Error updating Cancelation:", error);
+
+//     const errorMsg = error.message || "Error during product updating";
+//     return next(new AppError(errorMsg, 400));
+//   }
+// };
+
 const updateProduct = async (req, res, next) => {
-  // const product_id = req.params.id;
-  // const { productName, price, vendor, category, description, reviews } =
-  //   req.body;
-  // let old_images = [];
-  // req.body.old_images?.length
-  //   ? (old_images = JSON.parse(req.body.old_images))
-  //   : null;
-  // const product = await Product.findById(product_id);
-  // if (!product)
-  //   return next(new AppError('Product With The Provided Id Not Found 🤷‍♀️', 404));
-  // let uploadedImages = [];
-  // if (req.files) {
-  //   const uploadPromises = req.files.map(async (file) => {
-  //     const buffImage = dataUri(file);
-  //     try {
-  //       const uploadedImage = await uploader.upload(buffImage.content, {
-  //         public_id: file.originalname,
-  //         folder: `products_images/${refineStrings(
-  //           product.productName
-  //         )}_images`,
-  //       });
-  //       return uploadedImage?.secure_url || null;
-  //     } catch (err) {
-  //       return next(
-  //         new AppError(
-  //           `failed to upload image to Cloudnary, error is ${err}`,
-  //           500
-  //         )
-  //       );
-  //     }
-  //   });
-  //   // To Await All the Upload Promises To Ensures That All Images are Uploaded Before Proceeding.
-  //   uploadedImages = await Promise.all(uploadPromises);
-  // }
-  // let updatedImgsLinks;
-  // if (uploadedImages.length + old_images.length > productImgsCount) {
-  //   return next(
-  //     new AppError(
-  //       `Total Product Images Count can't be More Than ${productImgsCount} images`,
-  //       400
-  //     )
-  //   );
-  // }
-  // if (uploadedImages.length && old_images.length) {
-  //   updatedImgsLinks = [...old_images, ...uploadedImages];
-  // } else if (uploadedImages.length) {
-  //   updatedImgsLinks = uploadedImages;
-  // } else if (old_images.length) {
-  //   updatedImgsLinks = old_images;
-  // } else {
-  //   updatedImgsLinks = product.imgs_links;
-  // }
-  // const editedProduct = await Product.findByIdAndUpdate(
-  //   product_id,
-  //   {
-  //     productName,
-  //     imgsLinks: updatedImgsLinks,
-  //     price,
-  //     vendor,
-  //     category,
-  //     description,
-  //     reviews,
-  //   },
-  //   { new: true }
-  // );
-  // res.send({
-  //   message: 'Product updated successfully!',
-  //   Product: editedProduct,
-  // });
+  try {
+    const product_id = req.params.id;
+    const { productName, subCategoryId, vendor, price, description } = req.body;
+
+    let old_images = [];
+    if (req.body.old_images?.length) {
+      old_images = JSON.parse(req.body.old_images);
+    }
+
+    const product = await Product.findById(product_id);
+    if (!product)
+      return next(
+        new AppError("Product With The Provided Id Not Found 🤷‍♀️", 404)
+      );
+
+    let uploadedImages = [];
+    if (req.files && req.files.length > 0) {
+      uploadedImages = req.files.map((file) =>
+        path.join(
+          "uploads",
+          "products",
+          `${productName}_${subCategoryId}`,
+          file.filename
+        )
+      );
+    }
+
+    // Ensure the total number of images does not exceed 8
+    if (old_images.length + uploadedImages.length > 8) {
+      // Delete newly uploaded images before returning the error
+      uploadedImages.forEach((filePath) => deleteFile(filePath));
+      return next(
+        new AppError("Total images (old + new) must not exceed 8.", 400)
+      );
+    }
+
+    // Update product in database
+    const updatedProduct = await Product.findByIdAndUpdate(
+      product_id,
+      {
+        productName,
+        subCategoryId,
+        vendor,
+        price,
+        description,
+        imgsUrls: [...old_images, ...uploadedImages],
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: `Product ${productName} Updated Successfully!`,
+      updatedProduct,
+    });
+  } catch (error) {
+    // Cleanup newly uploaded images on error
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        deleteFile(
+          path.join(
+            "uploads",
+            "products",
+            `${req.body.productName}_${req.body.subCategoryId}`,
+            file.filename
+          )
+        );
+      });
+    }
+
+    console.error("Error updating product:", error);
+    return next(
+      new AppError(error.message || "Error during product updating", 400)
+    );
+  }
 };
 
-const deleteProduct = async (req, res, next) => {
-  const product_id = req.params.id;
-  const product = await Product.findById(product_id);
-  if (!product)
-    return next(new AppError("Product With The Provided Id Not Found 🤷‍♀️", 404));
+// --------------------------------------------------------------------------------------------------------
+/**
+ * Delete Product
+ */
 
-  const deletedProduct = await Product.findByIdAndDelete(product_id);
+const toggleStatusById = async (req, res, next) => {
+  const { id } = req.params;
 
-  res.send({
-    message: `Product ${product.productName} deleted successfully!`,
-    deletedProduct,
+  // Find  by ID
+  const foundProduct = await getAnyById(Product, id, res);
+
+  if (!foundProduct) return;
+  // Toggle the status based on the current value
+  const newStatus = foundProduct.status == "active" ? "inActive" : "active";
+
+  // Update the status
+  foundProduct.status = newStatus;
+  await foundProduct.save();
+  // console.log(newStatus);
+  console.log("🚀 ~ toggleStatusById ~ foundProduct:", foundProduct);
+
+  // Respond with the updated Product
+  res.status(200).json({
+    message: "status changed sucessfully!", // Make sure this key exists in your translations
+    foundProduct,
   });
 };
 
 module.exports = {
   getAllProducts,
   newestProducts,
-  expensiveProducts,
+
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct,
-  productImgsCount,
+  toggleStatusById,
 };

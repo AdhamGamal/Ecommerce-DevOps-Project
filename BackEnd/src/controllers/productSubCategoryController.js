@@ -17,6 +17,7 @@ const getAllProductSubCategory = async (req, res, next) => {
 // ــــــــــــــــــــــــــــــ Create product sub category ـــــــــــــــــــــــــــــــــــــــــــــ
 const createProductSubCategory = async (req, res, next) => {
   const { name, image, categoryId } = req.body;
+  console.log("🚀 ~ createProductSubCategory ~ req.body:", req.body);
 
   let newProductSubCategory = await ProductSubCategory.create({
     name,

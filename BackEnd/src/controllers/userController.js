@@ -31,7 +31,7 @@ const register = async (req, res, next) => {
     email,
     password,
   });
-  console.log("🚀 ~ register ~ createdUser:", createdUser);
+  // console.log("🚀 ~ register ~ createdUser:", createdUser);
   res.status(201).send({ message: "User created successfully!" });
 };
 //_________________________________//get all users//____________________________//

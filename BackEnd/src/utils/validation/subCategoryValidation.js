@@ -20,8 +20,14 @@ const subCategorySchema = Joi.object({
 
 // validation
 const validateSubCategory = async (req, res, next) => {
+  console.log("here");
+
   const { name, image, categoryId } = req.body;
-  const foundSubCategory = await ProductSubCategory.find({ name, categoryId });
+  const foundSubCategory = await ProductSubCategory.findOne({
+    name,
+    categoryId,
+  });
+  // console.log("🚀 ~ validateSubCategory ~ foundSubCategory:", foundSubCategory);
   if (foundSubCategory) {
     return next(new AppError("the name and category are found before", 400));
   }

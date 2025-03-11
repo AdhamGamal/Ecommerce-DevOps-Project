@@ -20,7 +20,7 @@ const categorySchema = Joi.object({
 // validation
 const validateCategory = async (req, res, next) => {
   const { name, image } = req.body;
-  const foundCategory = await ProductCategory.find({ name });
+  const foundCategory = await ProductCategory.findOne({ name });
   if (foundCategory) {
     return next(new AppError("the name is found before", 400));
   }

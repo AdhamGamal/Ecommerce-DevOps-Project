@@ -14,24 +14,43 @@ const reviewSchema = new Schema(
       ref: "Product",
       required: true,
     },
-    reviewTitle: {
+
+    title: {
       type: String,
       required: true,
       minLength: 3,
     },
-    reviewMsg: {
+    content: {
       type: String,
       required: true,
       minLength: 3,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inActive"],
+      default: "active",
     },
   },
+
   {
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
+reviewSchema.virtual("user", {
+  ref: "users",
+  localField: "userId",
+  foreignField: "_id",
+});
 
+reviewSchema.pre("find", autoPopulateUser);
+reviewSchema.pre("findOne", autoPopulateUser);
+function autoPopulateUser(next) {
+  this.populate("user");
+
+  next();
+}
 const Review = mongoose.model("Review", reviewSchema);
 
 module.exports = Review;

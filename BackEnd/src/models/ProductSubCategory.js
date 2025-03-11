@@ -36,6 +36,22 @@ const productSubCategorySchema = new Schema(
 
 // **Create a Compound Unique Index for (name, categoryId)**
 productSubCategorySchema.index({ name: 1, categoryId: 1 }, { unique: true });
+productSubCategorySchema.virtual("category", {
+  ref: "Product-category",
+  localField: "categoryId",
+  foreignField: "_id",
+  justOne: true, // Allow multiple specialties if needed
+  options: { select: "name" }, // Select only the 'name' field from Specialty
+});
+
+productSubCategorySchema.pre("find", autoPopulateCategory);
+productSubCategorySchema.pre("findOne", autoPopulateCategory);
+function autoPopulateCategory(next) {
+  this.populate("category");
+
+  // this.populate("userName");
+  next();
+}
 
 const ProductSubCategory = mongoose.model(
   "Product-sub-category",

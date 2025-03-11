@@ -115,13 +115,13 @@ const MainStore = () => {
               <Button
                 primary={false}
                 onClick={() => handleShowMore(index)}
-                className="mt-4 px-4 py-2 bg-primary-color text-white rounded-md hover:bg-secondary-color transition"
+                className="mt-3 "
               >
                 Show More{" "}
                 <span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="white"
+                    fill="currentColor"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"

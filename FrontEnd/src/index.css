@@ -6,6 +6,6 @@
 
 
 
-a.active {
-  border-bottom: 2px solid var(--line-primary);
+body {
+  @apply font-gabriela;
 }

@@ -7,6 +7,7 @@ import ModernBackpack from "../../assets/images/ModernBackpack.avif";
 // import brand2 from "../../assets/images/brand2.jpg";
 // import brand3 from "../../assets/images/brand3.jpg";
 // import brand4 from "../../assets/images/brand4.png";
+import Button from "../UI/Button";
 
 const NewArrivals = () => {
   const arrivals = [
@@ -49,9 +50,14 @@ const NewArrivals = () => {
               className="w-full h-64 object-cover rounded-lg mb-4 hover:scale-105"
             />
             <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
-            <button className="bg-secondary-color text-primary-color font-medium py-2 px-4 rounded hover:bg-light-color">
+
+            <Button
+              primary={false}
+              onClick={() => handleShowMore(index)}
+              className="mt-2  "
+            >
               Shop Now
-            </button>
+            </Button>
           </div>
         ))}
       </div>

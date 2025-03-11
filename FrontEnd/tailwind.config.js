@@ -34,8 +34,16 @@ export default {
         "line-primary": "#", // Dark red for borders
       },
 
+      // fontFamily: {
+      //   sans: ["Cairo", "sans-serif"], // Set Cairo as the default sans-serif font
+      // },
       fontFamily: {
-        sans: ["Cairo", "sans-serif"], // Set Cairo as the default sans-serif font
+        gloria: ['"Gloria Hallelujah"', "cursive"],
+        merienda: ['"Merienda"', "cursive", "Cairo"],
+        playwrite: ['"Playwrite IT Moderna"', "sans-serif"],
+        roboto: ['"Roboto"', "Cairo"],
+        special: ['"Special Elite"', "cursive"],
+        gabriela: ["Gabriela", "Cairo"],
       },
     },
   },

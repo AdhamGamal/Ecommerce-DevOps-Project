@@ -2,7 +2,7 @@ import React from "react";
 
 const Slide = ({ image, title1, title2, text, buttonName }) => {
   return (
-    <div className="relative w-full h-full">
+    <div className="font-merienda relative w-full h-full">
       {/* Background Image */}
       <img
         src={image}
@@ -13,7 +13,7 @@ const Slide = ({ image, title1, title2, text, buttonName }) => {
       <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center">
         {/* Text container */}
         <div className="text-center p-6 bg-black bg-opacity-50 rounded-lg max-w-2xl">
-          <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-white md:text-5xl xl:text-6xl">
+          <h1 className=" mb-4 text-4xl font-extrabold leading-none tracking-tight text-white md:text-5xl xl:text-6xl">
             {title1}
           </h1>
           <h2 className="mb-4 text-xl font-bold leading-none tracking-tight text-secondary-color md:text-3xl xl:text-4xl">

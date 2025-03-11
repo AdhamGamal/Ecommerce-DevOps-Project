@@ -10,26 +10,26 @@ const productSchema = new Schema(
       required: true,
     },
 
-    imgsLinks: [String],
-
-    oldPrice: {
-      type: Number,
-      required: true,
+    imgsUrls: [String],
+    price: {
+      final: {
+        type: Number,
+      },
+      original: {
+        type: Number,
+        required: true,
+      },
     },
-    newPrice: {
-      type: Number,
-      required: true,
-    },
-
     vendor: {
       type: String,
       required: true,
     },
-    categoryId: {
-      type: Schema.Types.ObjectId,
-      ref: "Product-category",
-      required: true,
+    status: {
+      type: String,
+      enum: ["active", "inActive", "out of stock"],
+      default: "active",
     },
+
     subCategoryId: {
       type: Schema.Types.ObjectId,
       ref: "Product-sub-category",
@@ -46,32 +46,18 @@ const productSchema = new Schema(
     toObject: { virtuals: true },
   }
 );
-productSchema.virtual("reviews", {
-  ref: "Review",
-  localField: "_id",
-  foreignField: "productId",
-  // justOne: true,
-});
-productSchema.virtual("category", {
-  ref: "Product-category",
-  localField: "categoryId",
-  foreignField: "_id",
-  justOne: true,
-  // options: { select: "name" },
-});
+
 productSchema.virtual("subCategory", {
   ref: "Product-sub-category",
-  localField: "_id",
-  foreignField: "subCategoryId",
+  localField: "subCategoryId",
+  foreignField: "_id",
   justOne: true,
-  // options: { select: "name" },
+  options: { select: "name" },
 });
 
 productSchema.pre("find", autoPopulateProduct);
 function autoPopulateProduct(next) {
-  this.populate("reviews").populate("category").populate("subCategory");
-
-  // this.populate("userName");
+  this.populate("subCategory").populate("category.name", "subCategory");
   next();
 }
 const Product = mongoose.model("Product", productSchema);

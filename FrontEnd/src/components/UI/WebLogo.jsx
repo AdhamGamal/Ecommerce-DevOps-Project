@@ -7,7 +7,7 @@ const WebLogo = () => {
     <>
       <Link
         to="/"
-        className="flex items-center  text-3xl font-bold text-gray-300 relative"
+        className=" font-special flex items-center  text-3xl font-bold text-gray-300 relative"
       >
         {/* Shopping Cart Logo */}
         <img

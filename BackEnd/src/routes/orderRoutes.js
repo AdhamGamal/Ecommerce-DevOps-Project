@@ -1,33 +1,39 @@
-const express=require('express');
-const router=express.Router();
-const {checkId,getAllOrders,getOneOrder,createOrder,updateOrder,deleteOrder}=require('../controllers/orderController');
-const verifyToken = require('../utils/verifyToken');
+const express = require("express");
+const router = express.Router();
+const {
+  getAllOrders,
+  getOneOrder,
+  createOrder,
+  changeOrderStatus,
+} = require("../controllers/orderController");
+const verifyToken = require("../utils/verifyToken");
 
-//Id Check Middleware
-// router.param('id',checkId)
+const {
+  validateOrder,
+  validateEditOrder,
+} = require("../utils/validation/orderValidation");
 
+const isAdmin = require("../utils/isAdmin");
 
-////Get All The Orders 
-router.get('/',verifyToken,getAllOrders)
+////Get All The Orders
+router.get("/", verifyToken, getAllOrders);
 
 //Get Specific order with Id
 
-router.get('/:id',verifyToken,checkId,getOneOrder);
+router.get("/:id", verifyToken, getOneOrder);
 
 //Create New Order
 
-router.post('/',verifyToken,createOrder);
+router.post("/", verifyToken, validateOrder, createOrder);
 
 //update Order
 
-router.patch('/:id',verifyToken,checkId,updateOrder);
+router.patch(
+  "/:id",
+  verifyToken,
+  isAdmin,
+  validateEditOrder,
+  changeOrderStatus
+);
 
-//Delete Order
-
-router.delete('/:id',verifyToken,checkId,deleteOrder)
-
-
-
-
-
-module.exports=router;
+module.exports = router;

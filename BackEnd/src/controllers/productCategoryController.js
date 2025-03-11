@@ -7,7 +7,7 @@ const { getAnyById } = require("../utils/commonUsedFunction");
 const getAllProductCategory = async (req, res, next) => {
   const productCategories = await ProductCategory.find({
     status: "active",
-  }).sort({ name: 1 });
+  }).sort({ createdAt: 1 });
   console.log("productCategories", productCategories.length);
 
   res.status(200).send({
@@ -57,20 +57,15 @@ const updateProductCategoryById = async (req, res, next) => {
 
 const toggleStatusById = async (req, res, next) => {
   const { id } = req.params;
-  console.log("🚀 ~ toggleStatusById ~ id:", id);
 
   // Find  by ID
   const foundProductcategory = await getAnyById(ProductCategory, id, res);
-  console.log(
-    "🚀 ~ toggleStatusById ~ foundProductcategory:",
-    foundProductcategory
-  );
+
   if (!foundProductcategory) return;
   // Toggle the status based on the current value
   const newStatus =
     foundProductcategory.status == "active" ? "inActive" : "active";
 
-  console.log("🚀 ~ toggleStatusById ~ newStatus:", newStatus);
   // Update the status
   foundProductcategory.status = newStatus;
   await foundProductcategory.save();
