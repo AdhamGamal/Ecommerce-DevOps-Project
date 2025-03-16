@@ -9,11 +9,13 @@ function createUploadMiddleware(folderName, Length) {
   // Define storage configuration for multer
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      // Create folder name based on userName
+      // Create folder path
       const requiredImagePath = path.join(
         "uploads",
         folderName,
-        `${req.body.productName}_${req.body.subCategoryId}`
+        `${req.body.name}${
+          req.body.subCategoryId ? `_${req.body.subCategoryId}` : ""
+        }`
       );
 
       // Create directories recursively if they don't exist
@@ -35,11 +37,11 @@ function createUploadMiddleware(folderName, Length) {
   const upload = multer({
     storage: storage,
     limits: {
-      fileSize: 500 * 1024, // 500 KB limit
+      fileSize: 1000 * 1024, // 1000 KB limit
     },
     fileFilter: function (req, file, cb) {
       // Check if the file type and size are correct
-      if (file.size > 500 * 1024) {
+      if (file.size > 1000 * 1024) {
         // Check file size
         return cb(new AppError("wrong image size", 400), false);
       }
@@ -89,7 +91,7 @@ function createUploadMiddleware(folderName, Length) {
 // Function to check the file type
 function checkFileType(file, cb) {
   // Allowed image filetypes
-  const allowedImageTypes = /jpeg|jpg|png|gif|webp/;
+  const allowedImageTypes = /jpeg|jpg|png|gif|webp|avif/;
   // Check if the uploaded file is an image based on its extension
   const isImage = allowedImageTypes.test(
     path.extname(file.originalname).toLowerCase()

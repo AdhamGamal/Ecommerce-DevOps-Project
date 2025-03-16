@@ -5,6 +5,7 @@ import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
+import URL from "../../../utils/URL";
 
 const ProductImageSwiper = ({ product }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -38,10 +39,10 @@ const ProductImageSwiper = ({ product }) => {
         modules={[FreeMode, Navigation, Thumbs]}
         className="mySwiper2 relative"
       >
-        {product?.images.map((image, index) => (
+        {product?.imgsUrls.map((image, index) => (
           <SwiperSlide key={index}>
             <img
-              src={image}
+              src={`${URL}/${image}`}
               alt={`Product Image ${index + 1}`}
               className="rounded-lg w-full h-[400px] object-cover"
             />
@@ -119,10 +120,10 @@ const ProductImageSwiper = ({ product }) => {
         modules={[FreeMode, Navigation, Thumbs]}
         className="mySwiper mt-4"
       >
-        {product?.images.map((image, index) => (
+        {product?.imgsUrls.map((image, index) => (
           <SwiperSlide key={index}>
             <img
-              src={image}
+              src={`${URL}/${image}`}
               alt={`Thumbnail ${index + 1}`}
               className="rounded-md w-full h-[100px] object-cover"
             />

@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 
 const productSchema = new Schema(
   {
-    productName: {
+    name: {
       type: String,
       required: true,
     },
@@ -57,7 +57,7 @@ productSchema.virtual("subCategory", {
 
 productSchema.pre("find", autoPopulateProduct);
 function autoPopulateProduct(next) {
-  this.populate("subCategory").populate("category.name", "subCategory");
+  this.populate("subCategory");
   next();
 }
 const Product = mongoose.model("Product", productSchema);

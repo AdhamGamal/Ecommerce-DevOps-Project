@@ -9,9 +9,7 @@ const ProductDetails = ({ product }) => {
         {product.name}
       </h1>
       <div className="grid grid-rows-3 gap-10">
-        <p className="mt-4 text-gray-400 row-span-2">
-          {product.ProductDetails}
-        </p>
+        <p className="mt-4 text-gray-400 row-span-2">{product.description}</p>
 
         <div className=" flex flex-col justify-between  ">
           <h2 className="text-xl text-gray-600 mt-3 flex justify-end items-center">

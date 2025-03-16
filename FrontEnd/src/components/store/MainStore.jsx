@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import bags from "../../assets/images/bags2.jpg";
 import clothesWomen from "../../assets/images/clothesWomen.jpg";
 import shoesWomen from "../../assets/images/shoesWomen2.webp";
@@ -17,45 +17,14 @@ import kidsToys from "../../assets/images/kidsToys.jpg";
 import kidsAcc from "../../assets/images/kids11.webp";
 import kidsBags from "../../assets/images/kidsBags.webp";
 import Button from "../UI/Button";
-
-const products = [
-  {
-    name: "Fashion Women",
-    subcategories: [
-      { name: "Bags", image: bags },
-      { name: "Clothes", image: clothesWomen },
-      { name: "Watches", image: womenWatch },
-      { name: "Shoes", image: shoesWomen },
-      { name: "Sunglasses", image: sunglasses },
-      { name: "Accessories", image: AccessoriesWowmen },
-    ],
-  },
-  {
-    name: "Fashion Men",
-    subcategories: [
-      { name: "Clothes", image: menClothes },
-      { name: "Shoes", image: menShose },
-      { name: "Watches", image: menWatch },
-      { name: "Sunglasses", image: menSunGlasses },
-      { name: "Bags & Belts", image: menBags },
-    ],
-  },
-  {
-    name: "Fashion Kids",
-    subcategories: [
-      { name: "Clothes", image: kidsClothes },
-      { name: "Shoes", image: kidsshoes },
-      { name: "Toys", image: kidsToys },
-      { name: "Accessories", image: kidsAcc },
-      { name: "Bags", image: kidsBags },
-    ],
-  },
-];
+import Loading from "../UI/Loading";
+import URL from "../../utils/URL";
+import axios from "axios";
 
 const MainStore = () => {
-  const [visibleSubcategories, setVisibleSubcategories] = useState(
-    products.map(() => 4) // Show 4 subcategories initially for each category
-  );
+  const [productSubCategories, setProductSubCategories] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [visibleSubcategories, setVisibleSubcategories] = useState([]); // Initialize as empty array
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleShowMore = (index) => {
@@ -64,10 +33,36 @@ const MainStore = () => {
     );
   };
 
-  const handleSubcategoryClick = (category, type) => {
+  const handleSubcategoryClick = (id) => {
+    console.log("🚀 ~ handleSubcategoryClick ~ id:", id);
+
     // Navigate to the Products page with query parameters
-    navigate(`/products?category=${category}&type=${type}`);
+    navigate(`/products?subCategoryId=${id}`);
   };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${URL}/product-sub-category/`);
+        setProductSubCategories(response.data.categories); // Set the fetched categories
+        // console.log(
+        //   "🚀 ~ fetchCategories ~ response.data.categories:",
+        //   response.data.categories
+        // );
+
+        // Initialize visibleSubcategories based on the fetched data
+        setVisibleSubcategories(response.data.categories.map(() => 4)); // Show 4 subcategories initially for each category
+      } catch (error) {
+        console.error("Error fetching product categories:", error);
+      } finally {
+        setLoading(false); // Hide loading once data is fetched (or on error)
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) return <Loading />; // Show loading component while fetching
 
   return (
     <div className="container mx-auto p-6 px-16">
@@ -75,30 +70,25 @@ const MainStore = () => {
         Explore Our Store
       </h2>
 
-      {products.map((category, index) => (
-        <div key={index} className="mb-10">
+      {productSubCategories.map((category, index) => (
+        <div key={category.categoryId} className="mb-10">
           {/* Category Title */}
           <h3 className="text-2xl font-semibold mb-3 border-b-2 pb-2 text-secondary-color">
             {category.name}
           </h3>
 
           {/* Subcategories Grid */}
-          <div className="grid grid-cols-1  sm:grid-cols-2  lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {category.subcategories
-              .slice(0, visibleSubcategories[index])
+              .slice(0, visibleSubcategories[index]) // Use visibleSubcategories[index] to control the number of visible subcategories
               .map((sub, i) => (
                 <div
                   key={i}
                   className="border h-[250px] w-full rounded-lg shadow-md text-center hover:scale-105 cursor-pointer"
-                  onClick={() =>
-                    handleSubcategoryClick(
-                      category.name.toLowerCase().replace(" ", ""),
-                      sub.name.toLowerCase()
-                    )
-                  }
+                  onClick={() => handleSubcategoryClick(sub._id)}
                 >
                   <img
-                    src={sub.image}
+                    src={`${URL}/${sub.image}`}
                     alt={sub.name}
                     className="mx-auto h-[200px] w-full rounded-t-md object-cover"
                   />
@@ -115,7 +105,7 @@ const MainStore = () => {
               <Button
                 primary={false}
                 onClick={() => handleShowMore(index)}
-                className="mt-3 "
+                className="mt-3"
               >
                 Show More{" "}
                 <span>

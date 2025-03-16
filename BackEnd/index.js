@@ -1,11 +1,13 @@
 const express = require("express");
 const app = express();
 const errorHandler = require("express-async-error").Handler;
+const path = require("path");
 require("dotenv").config();
 
 const cors = require("cors");
 // DB connection
 require("./db");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //Requiring Routes
 const usersRouter = require("./src/routes/usersRoutes");

@@ -13,6 +13,7 @@ const {
   validateEditSubCategory,
 } = require("../utils/validation/subCategoryValidation");
 const isAdmin = require("../utils/isAdmin");
+const { uploadToFolder } = require("../middlewares/uploadFileToSpecificFolder");
 
 //Get All
 router.get("/", getAllProductSubCategory);
@@ -23,6 +24,8 @@ router.post(
   "/",
   verifyToken,
   isAdmin,
+  uploadToFolder("sub_categories", 1),
+
   validateSubCategory,
   createProductSubCategory
 );

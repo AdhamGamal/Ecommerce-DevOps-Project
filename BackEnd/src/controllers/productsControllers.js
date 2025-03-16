@@ -4,15 +4,7 @@ const { deleteFile } = require("../utils/commonUsedFunction");
 const { dataUri } = require("../utils/multer");
 const path = require("path");
 
-function refineStrings(string) {
-  // removing special characters
-  const noSpecialChars = string.replace(/[^\w\s]|_/g, "");
-  // Remove emojis
-  noEmojis = noSpecialChars.replace(/[\u{1F300}-\u{1F6FF}]/gu, "");
-  // Trim leading and trailing white spaces
-  // Replace remaining spaces with underscores
-  return noEmojis.trim().replace(/\s+/g, "_");
-}
+// ــــــــــــــــــــــــــــــ get All Products ـــــــــــــــــــــــــــــــــــــــــــــ
 
 const getAllProducts = async (req, res, next) => {
   const Products = await Product.find({
@@ -23,6 +15,36 @@ const getAllProducts = async (req, res, next) => {
     Products,
   });
 };
+
+// ــــــــــــــــــــــــــــــ get All Products in the sub category ـــــــــــــــــــــــــــــــــــــــــــــ
+
+const getAllProductsInSubCategory = async (req, res, next) => {
+  try {
+    const { subCategoryId } = req.body; // Extract from query params
+    // console.log(
+    //   "🚀 ~ getAllProductsInSubCategory ~ subCategoryId:",
+    //   subCategoryId
+    // );
+
+    if (!subCategoryId) {
+      return res.status(400).send({ message: "subCategoryId is required" });
+    }
+
+    const products = await Product.find({
+      status: "active",
+      subCategoryId,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).send({
+      message: "All products are retrieved successfully",
+      products,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ــــــــــــــــــــــــــــــ newest Products ـــــــــــــــــــــــــــــــــــــــــــــ
 
 const newestProducts = async (req, res, next) => {
   const newestTenProducts = await Product.find({
@@ -35,6 +57,7 @@ const newestProducts = async (req, res, next) => {
     newestTenProducts,
   });
 };
+// ــــــــــــــــــــــــــــــ get Product By Id ـــــــــــــــــــــــــــــــــــــــــــــ
 
 const getProductById = async (req, res, next) => {
   const product_id = req.params.id;
@@ -51,7 +74,7 @@ const getProductById = async (req, res, next) => {
  */
 const createProduct = async (req, res, next) => {
   try {
-    const { productName, subCategoryId, vendor, price, description } = req.body;
+    const { name, subCategoryId, vendor, price, description } = req.body;
 
     // Handle multiple files
     const filePaths = [];
@@ -60,7 +83,7 @@ const createProduct = async (req, res, next) => {
         const filePath = path.join(
           "uploads",
           "products",
-          `${req.body.productName}_${req.body.subCategoryId}`,
+          `${req.body.name}_${req.body.subCategoryId}`,
           file.filename
         );
         filePaths.push(filePath);
@@ -69,7 +92,7 @@ const createProduct = async (req, res, next) => {
 
     // Create a new Product
     const createdProduct = await Product.create({
-      productName,
+      name,
       price,
       subCategoryId,
       vendor,
@@ -79,7 +102,7 @@ const createProduct = async (req, res, next) => {
     });
 
     res.status(201).send({
-      message: `Product ${productName} Created Successfully!`,
+      message: `Product ${name} Created Successfully!`,
       createdProduct,
     });
   } catch (error) {
@@ -88,13 +111,13 @@ const createProduct = async (req, res, next) => {
         const filePath = path.join(
           "uploads",
           "products",
-          `${req.body.productName}_${req.body.subCategoryId}`,
+          `${req.body.name}_${req.body.subCategoryId}`,
           file.filename
         );
         deleteFile(filePath);
       });
     }
-    console.error("Error creating Cancelation:", error);
+    console.error("Error in creation:", error);
 
     const errorMsg = error.message || "Error during product creation";
     return next(new AppError(errorMsg, 400));
@@ -108,7 +131,7 @@ const createProduct = async (req, res, next) => {
 // const updateProduct = async (req, res, next) => {
 //   try {
 //     const product_id = req.params.id;
-//     const { productName, subCategoryId, vendor, price, description } = req.body;
+//     const {  name, subCategoryId, vendor, price, description } = req.body;
 
 //     // Find the product in the database
 //     const product = await Product.findById(product_id);
@@ -124,7 +147,7 @@ const createProduct = async (req, res, next) => {
 //         const filePath = path.join(
 //           "uploads",
 //           "products",
-//           `${req.body.productName}_${req.body.subCategoryId}`,
+//           `${req.body. name}_${req.body.subCategoryId}`,
 //           file.filename
 //         );
 //         filePaths.push(filePath);
@@ -134,7 +157,7 @@ const createProduct = async (req, res, next) => {
 //     const updatedProduct = await Product.findByIdAndUpdate(
 //       product_id,
 //       {
-//         productName,
+//          name,
 //         subCategoryId,
 //         vendor,
 //         price,
@@ -145,7 +168,7 @@ const createProduct = async (req, res, next) => {
 //     );
 
 //     res.status(200).json({
-//       message: `Product ${productName} Updated Successfully!`,
+//       message: `Product ${ name} Updated Successfully!`,
 //       updatedProduct,
 //     });
 //   } catch (error) {
@@ -154,7 +177,7 @@ const createProduct = async (req, res, next) => {
 //         const filePath = path.join(
 //           "uploads",
 //           "products",
-//           `${req.body.productName}_${req.body.subCategoryId}`,
+//           `${req.body. name}_${req.body.subCategoryId}`,
 //           file.filename
 //         );
 //         deleteFile(filePath);
@@ -170,7 +193,7 @@ const createProduct = async (req, res, next) => {
 const updateProduct = async (req, res, next) => {
   try {
     const product_id = req.params.id;
-    const { productName, subCategoryId, vendor, price, description } = req.body;
+    const { name, subCategoryId, vendor, price, description } = req.body;
 
     let old_images = [];
     if (req.body.old_images?.length) {
@@ -189,7 +212,7 @@ const updateProduct = async (req, res, next) => {
         path.join(
           "uploads",
           "products",
-          `${productName}_${subCategoryId}`,
+          `${name}_${subCategoryId}`,
           file.filename
         )
       );
@@ -208,7 +231,7 @@ const updateProduct = async (req, res, next) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       product_id,
       {
-        productName,
+        name,
         subCategoryId,
         vendor,
         price,
@@ -219,7 +242,7 @@ const updateProduct = async (req, res, next) => {
     );
 
     res.status(200).json({
-      message: `Product ${productName} Updated Successfully!`,
+      message: `Product ${name} Updated Successfully!`,
       updatedProduct,
     });
   } catch (error) {
@@ -230,7 +253,7 @@ const updateProduct = async (req, res, next) => {
           path.join(
             "uploads",
             "products",
-            `${req.body.productName}_${req.body.subCategoryId}`,
+            `${req.body.name}_${req.body.subCategoryId}`,
             file.filename
           )
         );
@@ -274,6 +297,7 @@ const toggleStatusById = async (req, res, next) => {
 
 module.exports = {
   getAllProducts,
+  getAllProductsInSubCategory,
   newestProducts,
 
   getProductById,

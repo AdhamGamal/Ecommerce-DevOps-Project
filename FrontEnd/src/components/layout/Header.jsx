@@ -1,47 +1,71 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaHeart, FaShoppingCart } from "react-icons/fa"; // Icons for wishlist and cart
+import { FaBars } from "react-icons/fa";
 import { Cart, WishList } from "../../utils/Icons";
 import WebLogo from "../UI/WebLogo";
+import { useNavigate } from "react-router-dom";
+import useAuthenticate from "../../utils/useAuthenticate";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../store/slices/authSlice";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false); // For mobile menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthenticate();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
+
+  const dropdownRef = useRef(null); // Ref for the dropdown
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Initialize Flowbite
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleUserMenuSelect = (option) => {
+    setIsDropdownOpen(false); // Close dropdown after selection
+    if (option === "logout") {
+      dispatch(logout());
+      navigate("/login");
+    } else {
+      navigate(`/${option}`);
+    }
+  };
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    import("flowbite");
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    // Attach the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   return (
     <header className="text-text-color shadow-lg bg-back-color">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center p-4">
-        {/* Logo and Hamburger Menu */}
+        {/* Logo and Mobile Menu Toggle */}
         <div className="flex justify-between items-center w-full md:w-auto">
           <WebLogo />
 
           {/* Hamburger Menu for Mobile */}
           <button
-            className="md:hidden p-2 focus:outline-none"
+            className="lg:hidden p-2 focus:outline-none"
             onClick={toggleMenu}
           >
-            <svg
-              className="w-6 h-6 text-secondary-color"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              ></path>
-            </svg>
+            <FaBars className="w-6 h-6 text-secondary-color" />
           </button>
         </div>
 
@@ -49,7 +73,7 @@ const Header = () => {
         <nav
           className={`${
             isMenuOpen ? "block" : "hidden"
-          } md:flex md:items-center w-full md:w-auto mt-4 md:mt-0 border-t border-gray-200 md:border-none`}
+          } lg:flex md:items-center w-full md:w-auto mt-4 md:mt-0 border-t border-gray-200 md:border-none`}
         >
           <ul className="flex flex-col md:flex-row md:space-x-6 mt-4 md:mt-0">
             <li>
@@ -87,8 +111,8 @@ const Header = () => {
           </ul>
         </nav>
 
-        {/* Wishlist, Cart, and User Avatar */}
-        <div className="flex items-center space-x-6 mt-4 md:mt-0">
+        {/* Wishlist, Cart, Login/Register, and User Avatar */}
+        <div className="flex items-center space-x-4 md:space-x-6 mt-4 md:mt-0">
           {/* Wishlist Icon */}
           <Link to="/wishlist" className="relative hover:scale-105">
             {WishList}
@@ -105,75 +129,87 @@ const Header = () => {
             </span>
           </Link>
 
-          {/* User Avatar Dropdown (Flowbite) */}
-          <div className="relative z-50">
-            {/* Dropdown Button */}
-            <button
-              id="dropdownUserAvatarButton"
-              data-dropdown-toggle="dropdownAvatar"
-              className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300"
-              type="button"
-            >
-              <span className="sr-only">Open user menu</span>
-              <img
-                className="w-8 h-8 rounded-full"
-                src="https://flowbite.com/docs/images/people/profile-picture-3.jpg"
-                alt="user photo"
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            <div
-              id="dropdownAvatar"
-              className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
-            >
-              <div className="px-4 py-3 text-sm text-gray-900">
-                <div>Heba</div>
-                <div className="font-medium truncate">hebs@gmail.com</div>
-              </div>
-              <ul
-                className="py-2 text-sm text-gray-700"
-                aria-labelledby="dropdownUserAvatarButton"
+          {/* Login & Register Buttons */}
+          {!isAuthenticated && (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link
+                to="/login"
+                className="px-4 py-2 border border-secondary-color text-secondary-color rounded hover:bg-secondary-color hover:text-white transition"
               >
-                <li>
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/settings"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Settings
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/orders"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Orders
-                  </Link>
-                </li>
-              </ul>
-              <div className="py-2">
-                <button
-                  onClick={() => {
-                    // Handle logout logic here
-                    console.log("Logged out");
-                  }}
-                  className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
-                >
-                  Sign out
-                </button>
-              </div>
+                Login
+              </Link>
+              <Link
+                to="/sign-up"
+                className="px-4 py-2 bg-secondary-color text-white rounded hover:opacity-90 transition"
+              >
+                Register
+              </Link>
             </div>
-          </div>
+          )}
+
+          {/* User Avatar */}
+          {isAuthenticated && (
+            <div className="relative" ref={dropdownRef}>
+              <img
+                className="w-10 h-10 rounded-full cursor-pointer border-2 border-zinc-500 p-2 hover:scale-105"
+                src={
+                  user?.profile_pic ||
+                  "https://static.vecteezy.com/system/resources/previews/011/947/163/non_2x/gold-user-icon-free-png.png"
+                }
+                alt="user"
+                onClick={toggleDropdown}
+              />
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+                  <ul className="py-2">
+                    <li
+                      onClick={() => handleUserMenuSelect("profile")}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:text-secondary-color  text-zinc-800"
+                    >
+                      Profile
+                    </li>
+                    <li
+                      onClick={() => handleUserMenuSelect("settings")}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:text-secondary-color  text-zinc-800"
+                    >
+                      Settings
+                    </li>
+                    <li
+                      onClick={() => handleUserMenuSelect("orders")}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:text-secondary-color  text-zinc-800 "
+                    >
+                      Orders
+                    </li>
+                    <li
+                      onClick={() => handleUserMenuSelect("logout")}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:text-secondary-color  text-zinc-800 border-t-2"
+                    >
+                      Sign out
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Mobile Login/Register */}
+        {!isAuthenticated && (
+          <div className="flex md:hidden flex-col w-full items-center space-y-2 mt-4">
+            <Link
+              to="/login"
+              className="w-full text-center px-4 py-2 border border-secondary-color text-secondary-color rounded hover:bg-secondary-color hover:text-white transition"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="w-full text-center px-4 py-2 bg-secondary-color text-white rounded hover:opacity-90 transition"
+            >
+              Register
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );

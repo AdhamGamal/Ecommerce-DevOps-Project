@@ -23,6 +23,8 @@ const getUserById = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   const { userName, email, password } = req.body;
+  console.log(req.body);
+
   if (await User.findOne({ email })) {
     res.status(409).send({ message: "This Email already registered" });
   }
@@ -32,7 +34,7 @@ const register = async (req, res, next) => {
     password,
   });
   // console.log("🚀 ~ register ~ createdUser:", createdUser);
-  res.status(201).send({ message: "User created successfully!" });
+  res.status(201).send({ message: "User created successfully 😊!" });
 };
 //_________________________________//get all users//____________________________//
 

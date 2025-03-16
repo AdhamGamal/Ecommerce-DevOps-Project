@@ -35,7 +35,7 @@ exports.createCheckoutSession = async (req, res) => {
         price_data: {
           currency: "usd",
           product_data: {
-            name: item.productName,
+            name: item.name,
             metadata: {
               id: item._id,
             },

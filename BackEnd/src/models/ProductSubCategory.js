@@ -10,10 +10,7 @@ const productSubCategorySchema = new Schema(
       trim: true,
     },
 
-    image: {
-      type: String,
-      default: "",
-    },
+    image: { type: String, required: true },
 
     status: {
       type: String,

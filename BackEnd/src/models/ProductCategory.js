@@ -11,8 +11,14 @@ const productCategorySchema = new Schema(
       unique: true,
       trim: true,
     },
+    description: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
 
-    image: { String },
+    image: { type: String, required: true },
 
     status: {
       type: String,

@@ -4,12 +4,10 @@ const ProductSubCategory = require("../../models/ProductSubCategory");
 
 // Product Validation Schema
 const productSchema = Joi.object({
-  productName: Joi.string()
+  name: Joi.string()
     .min(3)
     .max(100)
-    .pattern(
-      /^[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+(?: [a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+)*$/
-    )
+
     .required()
     .messages({
       "string.pattern.base": `غير مسموح للأسم إلا بحروف فقط`,
@@ -56,9 +54,7 @@ const productSchema = Joi.object({
 
 // Middleware for validating product creation
 const validateProduct = async (req, res, next) => {
-  console.log("here");
-
-  const { productName, price, subCategoryId, vendor, description } = req.body;
+  const { name, price, subCategoryId, vendor, description } = req.body;
   const foundSubCategory = await ProductSubCategory.findOne({
     _id: subCategoryId,
   });
@@ -67,7 +63,7 @@ const validateProduct = async (req, res, next) => {
     return next(new AppError("the subCategoryId  is not found ", 400));
   }
   const { error } = productSchema.validate({
-    productName,
+    name,
     price,
     subCategoryId,
     vendor,
@@ -83,12 +79,10 @@ const validateProduct = async (req, res, next) => {
 };
 
 const productEditSchema = Joi.object({
-  productName: Joi.string()
+  name: Joi.string()
     .min(3)
     .max(100)
-    .pattern(
-      /^[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+(?: [a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+)*$/
-    )
+
     .required()
     .messages({
       "string.pattern.base": `غير مسموح للأسم إلا بحروف فقط`,
@@ -140,9 +134,7 @@ const productEditSchema = Joi.object({
 
 // validation
 const validateEditProduct = async (req, res, next) => {
-  console.log("here");
-
-  const { productName, price, subCategoryId, vendor, description } = req.body;
+  const { name, price, subCategoryId, vendor, description } = req.body;
   const foundSubCategory = await ProductSubCategory.findOne({
     subCategoryId,
   });
@@ -151,7 +143,7 @@ const validateEditProduct = async (req, res, next) => {
     return next(new AppError("the subCategoryId  is not found ", 400));
   }
   const { error } = productEditSchema.validate({
-    productName,
+    name,
     price,
     subCategoryId,
     vendor,

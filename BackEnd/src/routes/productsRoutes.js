@@ -9,6 +9,7 @@ const { uploadToFolder } = require("../middlewares/uploadFileToSpecificFolder");
 // Product Controllers
 const {
   getAllProducts,
+  getAllProductsInSubCategory,
   getProductById,
   createProduct,
   updateProduct,
@@ -22,6 +23,8 @@ const {
 
 // get all Products
 router.get("/", getAllProducts);
+// get all Products
+router.post("/subcategory", getAllProductsInSubCategory);
 
 // get The Newest 10 Products
 router.get("/newest", newestProducts);

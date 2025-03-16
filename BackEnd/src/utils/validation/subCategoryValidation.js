@@ -6,23 +6,20 @@ const ProductSubCategory = require("../../models/ProductSubCategory");
 const subCategorySchema = Joi.object({
   name: Joi.string()
     .min(3)
-    // .max(30)
+    // .max(30) // Uncomment if needed
     .required()
     .pattern(
-      /^[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+(?: [a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+)*$/
+      /^[a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669&]+(?: [a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669&]+)*$/
     )
     .messages({
       "string.pattern.base": `غير مسوح للأسم إلا بحروف فقط`,
     }),
   categoryId: Joi.string().required(),
-  image: Joi.string().required(),
 });
 
 // validation
 const validateSubCategory = async (req, res, next) => {
-  console.log("here");
-
-  const { name, image, categoryId } = req.body;
+  const { name, categoryId } = req.body;
   const foundSubCategory = await ProductSubCategory.findOne({
     name,
     categoryId,
@@ -33,7 +30,6 @@ const validateSubCategory = async (req, res, next) => {
   }
   const { error } = subCategorySchema.validate({
     name,
-    image,
     categoryId,
   });
   if (error) {
@@ -50,22 +46,20 @@ const subCategoryEditSchema = Joi.object({
     .min(3)
     // .max(30)
     .pattern(
-      /^[a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+(?: [a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669]+)*$/
+      /^[a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669&]+(?: [a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0621-\u064A\u0660-\u0669&]+)*$/
     )
     .messages({
       "string.pattern.base": `غير مسوح للأسم إلا بحروف فقط`,
     }),
   categoryId: Joi.string(),
-  image: Joi.string(),
 });
 
 // validation
 const validateEditSubCategory = async (req, res, next) => {
-  const { name, image, categoryId } = req.body;
+  const { name, categoryId } = req.body;
 
   const { error } = subCategoryEditSchema.validate({
     name,
-    image,
     categoryId,
   });
   if (error) {

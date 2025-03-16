@@ -64,7 +64,7 @@ const slides = [
 
 const HeroSwiper = () => {
   return (
-    <div className="relative">
+    <div className="relative z-40">
       <Swiper
         modules={[Navigation, Autoplay, Pagination]} // Add Pagination module
         navigation={{
@@ -98,6 +98,7 @@ const HeroSwiper = () => {
           className="swiper-button-prev border-2 p-4 border-[#5b5b5b] hover:-translate-x-1 hover:scale-105 shadow-lg"
           style={{
             backgroundColor: "#656565", // Gold color for button background
+            opacity: "50%",
             borderRadius: "50%", // Make the button circular
             width: "50px", // Reduced width of the button
             height: "50px", // Reduced height of the button
@@ -127,9 +128,11 @@ const HeroSwiper = () => {
         </div>
 
         <div
-          className="swiper-button-next border-2 p-4 border-[#5b5b5b] hover:translate-x-1 hover:scale-105 shadow-lg"
+          className="swiper-button-next border-2 p-4 border-[#5b5b5b] hover:translate-x-1 hover:scale-105 shadow-lg "
           style={{
             backgroundColor: "#656565", // Gold color for button background
+            opacity: "50%",
+
             borderRadius: "50%", // Make the button circular
             width: "50px", // Reduced width of the button
             height: "50px", // Reduced height of the button

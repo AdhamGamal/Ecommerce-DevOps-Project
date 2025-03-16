@@ -3,6 +3,8 @@ const ProductCategory = require("../models/ProductCategory");
 const AppError = require("../utils/AppError");
 const verifyToken = require("../utils/verifyToken");
 const { getAnyById } = require("../utils/commonUsedFunction");
+const path = require("path");
+
 // ـــــــــــــــــــــــــــــــــــ get all  ProductCategories ــــــــــــــــــــــــــــــــــ
 const getAllProductCategory = async (req, res, next) => {
   const productCategories = await ProductCategory.find({
@@ -15,39 +17,86 @@ const getAllProductCategory = async (req, res, next) => {
     productCategories,
   });
 };
+
 // ــــــــــــــــــــــــــــــ Create product category ـــــــــــــــــــــــــــــــــــــــــــــ
 const createProductCategory = async (req, res, next) => {
-  const { name, image } = req.body;
-  console.log("🚀 ~ createProductCategory ~ name:", name);
+  try {
+    const { name, description } = req.body;
+    // Handle single file
+    // Handle multiple files
+    const filePaths = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        const filePath = path.join(
+          "uploads",
+          "categories",
+          `${req.body.name}`,
+          file.filename
+        );
+        filePaths.push(filePath);
+      });
+    }
+    let newProductCategory = await ProductCategory.create({
+      name,
+      description,
+      image: filePaths[0],
+    });
+    console.log("🚀 ~ createProductCategory ~ filePaths:", filePaths);
 
-  let newProductCategory = await ProductCategory.create({
-    name,
-    image,
-  });
-  console.log(
-    "🚀 ~ createProductCategory ~ newProductCategory:",
-    newProductCategory
-  );
+    console.log(
+      "🚀 ~ createProductCategory ~ newProductCategory:",
+      newProductCategory
+    );
 
-  res
-    .status(201)
-    .json({ message: "product category has been Created", newProductCategory });
+    res.status(201).json({
+      message: "product category has been Created",
+      newProductCategory,
+    });
+  } catch (error) {
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        const filePath = path.join(
+          "uploads",
+          "categories",
+          `${req.body.name}`,
+          file.filename
+        );
+        deleteFile(filePath);
+      });
+    }
+    console.error("Error in creation:", error);
+
+    const errorMsg = error.message || "Error during product creation";
+    return next(new AppError(errorMsg, 400));
+  }
 };
 // ـــــــــــــــــــــــــــــــــــ update the ProductCategory by id ــــــــــــــــــــــــــــــــــ
 const updateProductCategoryById = async (req, res, next) => {
   const { id } = req.params;
 
-  const { name, image } = req.body;
+  const { name, description } = req.body;
+
   // Find  by ID
   const foundProductcategory = await getAnyById(ProductCategory, id, res);
   if (!foundProductcategory) return;
-
+  const filePaths = [];
+  if (req.files && req.files.length > 0) {
+    req.files.forEach((file) => {
+      const filePath = path.join(
+        "uploads",
+        "categories",
+        `${req.body.name}`,
+        file.filename
+      );
+      filePaths.push(filePath);
+    });
+  }
   const updatedProductCategory = await ProductCategory.findByIdAndUpdate(id, {
     name,
-
-    image,
+    description,
+    image: filePaths[0],
   });
-  res.status(201).send({
+  res.status(200).send({
     message: `category With Id ${id} Has Been updated`, // Make sure this key exists in your translations
 
     updatedProductCategory,

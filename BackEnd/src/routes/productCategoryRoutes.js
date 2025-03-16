@@ -12,12 +12,20 @@ const {
   validateCategory,
   validateEditCategory,
 } = require("../utils/validation/categoryValidation");
+const { uploadToFolder } = require("../middlewares/uploadFileToSpecificFolder");
 //Get All
 router.get("/", getAllProductCategory);
 
 //Create New
 
-router.post("/", verifyToken, isAdmin, validateCategory, createProductCategory);
+router.post(
+  "/",
+  verifyToken,
+  isAdmin,
+  uploadToFolder("categories", 1),
+  validateCategory,
+  createProductCategory
+);
 
 //update
 

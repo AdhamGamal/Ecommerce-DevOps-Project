@@ -1,53 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import category1 from "../../assets/images/category1.webp";
-import category2 from "../../assets/images/category2.jpg";
-import category3 from "../../assets/images/category3.avif";
-import category4 from "../../assets/images/category4.avif";
-import category5 from "../../assets/images/category5.png";
-import category6 from "../../assets/images/category6.webp";
-import category7 from "../../assets/images/category7.jpg";
+import Loading from "../UI/Loading";
+import URL from "../../utils/URL";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+
 const ExploreOurCategories = () => {
-  const categories = [
-    {
-      name: "Fashion Women",
-      image: category1,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Fashion Men",
-      image: category2,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Fashion Kids",
-      image: category3,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Health & Beauty",
-      image: category4,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Baby Products",
-      image: category5,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Accessories",
-      image: category6,
-      description: " Explore the latest trends",
-    },
-    {
-      name: "Gym",
-      image: category7,
-      description: " Explore the latest trends",
-    },
-  ];
+  const [productCategories, setProductCategories] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${URL}/product-category/`);
+        // console.log("🚀 ~ fetchCategories ~ response.data:", response.data);
+        setProductCategories(response.data.productCategories); // Adjust based on actual API response
+      } catch (error) {
+        console.error("Error fetching product categories:", error);
+      } finally {
+        setLoading(false); // Hide loading once data is fetched (or on error)
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) return <Loading />; // Show loading component while fetching
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -69,7 +49,7 @@ const ExploreOurCategories = () => {
         }}
         autoplay
       >
-        {categories.map((category, index) => (
+        {productCategories.map((category, index) => (
           <SwiperSlide key={index}>
             <div className="mx-auto max-w-sm bg-white border border-gray-200 rounded-lg shadow-lg transition transform hover:scale-105 dark:bg-gray-800 dark:border-gray-700">
               <a
@@ -77,7 +57,7 @@ const ExploreOurCategories = () => {
               >
                 <img
                   className="rounded-t-lg w-full h-56 object-contain"
-                  src={category.image}
+                  src={`${URL}/${category.image}`}
                   alt={category.name}
                 />
               </a>
@@ -88,10 +68,12 @@ const ExploreOurCategories = () => {
                   </h5>
                 </a>
                 <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-                  {category.description}.
+                  {category.description
+                    ? category.description
+                    : "Explore Our Latest Trends"}
                 </p>
-                <a
-                  href={`/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                <Link
+                  to="/store"
                   className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-color to-secondary-color rounded-lg hover:from-secondary-color hover:to-primary-color focus:ring-4 focus:outline-none focus:ring-blue-300"
                 >
                   Explore Now
@@ -109,8 +91,8 @@ const ExploreOurCategories = () => {
                       strokeWidth="2"
                       d="M1 5h12m0 0L9 1m4 4L9 9"
                     />
-                  </svg>
-                </a>
+                  </svg>{" "}
+                </Link>
               </div>
             </div>
           </SwiperSlide>
