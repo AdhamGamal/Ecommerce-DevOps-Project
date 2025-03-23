@@ -120,7 +120,7 @@ const CategoryProducts = () => {
                     {product?.price?.final}
                   </span>
                 </div>
-
+                {/* // */}
                 {/* Buttons */}
                 <div className="flex justify-around items-center p-4 border-t mt-auto">
                   <button
