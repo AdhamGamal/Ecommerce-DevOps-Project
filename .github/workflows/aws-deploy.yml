@@ -48,7 +48,7 @@ jobs:
           echo "🚀 Setting up frontend..."
           cd FrontEnd
           npm install
-          npm run dev
+          npm run build
           echo "✅ Frontend build completed."
 
       - name: Build Frontend Docker Image

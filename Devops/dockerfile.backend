@@ -8,7 +8,7 @@ WORKDIR /app
 RUN rm -rf ./*
 
 # Copy package.json and package-lock.json
-COPY backend ./
+COPY BackEnd ./
 
 # Expose the backend port
 EXPOSE 5000

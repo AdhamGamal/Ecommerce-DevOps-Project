@@ -2,7 +2,7 @@
 FROM nginx:alpine
 
 # Copy built frontend
-COPY frontend/build /usr/share/nginx/html
+COPY FrontEnd/build /usr/share/nginx/html
 
 # Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
