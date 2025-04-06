@@ -1,20 +1,32 @@
-# Use an official Node.js runtime as a parent image
-FROM node:22
+# Step 1: Build the React App
+FROM node:22 AS builder
 
-# Set the working directory in the container
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json (or yarn.lock) files to install dependencies
-COPY package.json  ./
+# Copy package.json and package-lock.json first to leverage Docker caching
+COPY package.json package-lock.json ./
 
-# Install dependencies (both production and development dependencies)
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code into the container
+# Copy the rest of the project files
 COPY . .
 
-# Expose port 3000 (or the port your app is running on)
-EXPOSE 5173
+# Build the project using Vite
+RUN npm run build
 
-# Command to run the app (start the development server)
-CMD ["npm", "run", "dev"]
+# Step 2: Serve the app using Nginx
+FROM nginx:alpine
+
+# Copy the built files from the builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy custom Nginx config for handling React routing
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
