@@ -21,7 +21,7 @@ const { uploadToCloudinary } = require("../middlewares/uploadMiddleware");
 router.get("/", getAllProductSubCategory);
 
 //Create New
-
+//
 router.post(
   "/",
   verifyToken,
