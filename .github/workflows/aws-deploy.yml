@@ -51,6 +51,44 @@ jobs:
           npm run build
           echo "✅ Frontend build completed."
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Fetch EC2 Public IPs using AWS CLI
+        id: fetch_ips
+        run: |
+          echo "🚀 Fetching backend EC2 instance IPs using AWS CLI..."
+          BACKEND_IPS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Elegance-Backend*" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].PublicIpAddress" --output text)
+          
+          echo "BACKEND_IPS=${BACKEND_IPS}" >> $GITHUB_ENV
+          echo "✅ EC2 instance IPs fetched."
+
+      - name: Update Nginx Configuration
+        run: |
+          echo "🚀 Updating Nginx configuration..."
+          
+          # Get backend IPs dynamically from the AWS CLI
+          BACKENDS=$(echo $BACKEND_IPS | tr " " "\n")
+
+          # Build the upstream block for nginx
+          UPSTREAM=""
+          for ip in $BACKENDS; do
+            UPSTREAM+="\t\tserver ${ip}:8000;\n"
+          done
+
+          # Inject into nginx.conf.template
+          sed "/{{BACKEND_SERVERS}}/{
+              s/{{BACKEND_SERVERS}}/${UPSTREAM}/
+          }" FrontEnd/nginx.conf.template > FrontEnd/nginx.conf
+
+          echo "✅ Nginx configuration updated."
+
       - name: Build Frontend Docker Image
         run: |
           echo "🐳 Building frontend Docker image..."
