@@ -33,13 +33,16 @@ jobs:
         aws-region: ${{ vars.AWS_REGION }}
 
     - name: Terraform Init
-      run: terraform init -chdir=${{ env.TF_WORKING_DIR }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform init
 
     - name: Terraform Plan Destroy
-      run: terraform plan -destroy -chdir=${{ env.TF_WORKING_DIR }} -input=false
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform plan -destroy -input=false
       
     - name: Terraform Destroy
-      run: terraform destroy -auto-approve -chdir=${{ env.TF_WORKING_DIR }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform destroy -auto-approve
       env:
         TF_VAR_aws_region: ${{ vars.AWS_REGION }}
         TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}

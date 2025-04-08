@@ -25,16 +25,20 @@ jobs:
         aws-region: ${{ vars.AWS_REGION }}
 
     - name: Terraform Init
-      run: terraform init -chdir=${{ env.TF_WORKING_DIR }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform init
       
     - name: Terraform Validate
-      run: terraform validate -chdir=${{ env.TF_WORKING_DIR }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform validate
 
     - name: Terraform Plan
-      run: terraform plan -chdir=${{ env.TF_WORKING_DIR }} -var="aws_region=${{ vars.AWS_REGION }}" -var="backend_port=${{ vars.BACKEND_PORT || 8000 }}"
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform plan -var="aws_region=${{ vars.AWS_REGION }}" -var="backend_port=${{ vars.BACKEND_PORT || 8000 }}"
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -chdir=${{ env.TF_WORKING_DIR }}
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform apply -auto-approve
       env:
         TF_VAR_aws_region: ${{ vars.AWS_REGION }}
         TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}
