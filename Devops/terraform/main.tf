@@ -106,6 +106,7 @@ resource "aws_instance" "elegance_backend" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.elegance_public_subnet.id
   vpc_security_group_ids = [aws_security_group.elegance_sg.id]
+  key_name               = var.key_pair_name
 
   tags = {
     Name = "Elegance-Backend-${count.index + 1}"
@@ -117,6 +118,7 @@ resource "aws_instance" "elegance_frontend" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.elegance_public_subnet.id
   vpc_security_group_ids = [aws_security_group.elegance_sg.id]
+  key_name               = var.key_pair_name
 
   tags = {
     Name = "Elegance-Frontend"

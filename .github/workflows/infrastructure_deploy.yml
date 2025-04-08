@@ -43,4 +43,5 @@ jobs:
         TF_VAR_aws_region: ${{ vars.AWS_REGION }}
         TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}
         TF_VAR_ssh_access_cidr: ${{ vars.SSH_ACCESS_CIDR || '0.0.0.0/0' }}
-        TF_VAR_backend_port: ${{ vars.BACKEND_PORT || 8000 }}      
+        TF_VAR_backend_port: ${{ vars.BACKEND_PORT || 8000 }}
+        TF_VAR_key_pair_name: ${{ vars.KEY_PAIR_NAME || 'elegance-key-pair' }}

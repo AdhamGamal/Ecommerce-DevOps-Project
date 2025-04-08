@@ -38,3 +38,8 @@ variable "backend_port" {
   type        = number
   default     = 8000
 }
+
+variable "key_pair_name" {
+  description = "Name of the existing AWS EC2 Key Pair"
+  type        = string
+}
