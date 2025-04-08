@@ -7,30 +7,10 @@ on:
         description: 'Type "destroy" to confirm'
         required: true
         default: 'cancel'
-        
-env:
-  TF_WORKING_DIR: 'Devops/terraform'
-
 jobs:
   destroy:
-    if: github.event.inputs.confirm_destroy == 'destroy'
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download Terraform state
-      uses: actions/download-artifact@v4
-      with:
-        name: tfstate
-        path: ${{ env.TF_WORKING_DIR }}
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: "1.5.0"
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -38,19 +18,27 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ vars.AWS_REGION }}
 
-    - name: Terraform Init
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform init
+    - name: Destroy Instances
+      run: |
+        # Terminate all instances with Elegance-* name tag
+        aws ec2 describe-instances \
+          --filters "Name=tag:Name,Values=Elegance-*" \
+          --query "Reservations[].Instances[].InstanceId" \
+          --output text | xargs -r aws ec2 terminate-instances --instance-ids
 
-    - name: Terraform Plan Destroy
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform plan -destroy -input=false -var="aws_region=${{ vars.AWS_REGION }}"
-
-    - name: Terraform Destroy
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform destroy -auto-approve -var="aws_region=${{ vars.AWS_REGION }}"
-      env:
-        TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-        TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}
-        TF_VAR_ssh_access_cidr: ${{ vars.SSH_ACCESS_CIDR || '0.0.0.0/0' }}
-        TF_VAR_backend_port: ${{ vars.BACKEND_PORT || 8000 }}
+    - name: Destroy VPC
+      run: |
+        # Delete VPC and its dependencies
+        VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=Elegance-VPC" --query "Vpcs[0].VpcId" --output text)
+        
+        # Delete IGW
+        IGW_ID=$(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC_ID" --query "InternetGateways[0].InternetGatewayId" --output text)
+        aws ec2 detach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID
+        aws ec2 delete-internet-gateway --internet-gateway-id $IGW_ID
+        
+        # Delete subnets
+        aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" \
+          --query "Subnets[].SubnetId" --output text | xargs -r aws ec2 delete-subnet --subnet-id
+        
+        # Delete VPC
+        aws ec2 delete-vpc --vpc-id $VPC_ID
