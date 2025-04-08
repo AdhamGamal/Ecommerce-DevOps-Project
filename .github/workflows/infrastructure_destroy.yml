@@ -38,11 +38,11 @@ jobs:
 
     - name: Terraform Plan Destroy
       working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform plan -destroy -input=false
-      
+      run: terraform plan -destroy -input=false -var="aws_region=${{ vars.AWS_REGION }}"
+
     - name: Terraform Destroy
       working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform destroy -auto-approve
+      run: terraform destroy -auto-approve -var="aws_region=${{ vars.AWS_REGION }}"
       env:
         TF_VAR_aws_region: ${{ vars.AWS_REGION }}
         TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}
