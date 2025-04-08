@@ -1,0 +1,42 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+
+env:
+  TF_WORKING_DIR: 'Devops/terraform'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Terraform Init
+      run: terraform init -chdir=${{ env.TF_WORKING_DIR }}
+      
+    - name: Terraform Validate
+      run: terraform validate -chdir=${{ env.TF_WORKING_DIR }}
+
+    - name: Terraform Plan
+      run: terraform plan -chdir=${{ env.TF_WORKING_DIR }} -var="aws_region=${{ vars.AWS_REGION }}" -var="backend_port=${{ inputs.backend_port || 8000 }}"
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -chdir=${{ env.TF_WORKING_DIR }}
+      env:
+        TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+        TF_VAR_backend_instance_count: ${{ vars.BACKEND_INSTANCE_COUNT || 2 }}
+        TF_VAR_ssh_access_cidr: ${{ vars.SSH_ACCESS_CIDR || '0.0.0.0/0' }}
+        TF_VAR_backend_port: ${{ vars.BACKEND_PORT || 8000 }}

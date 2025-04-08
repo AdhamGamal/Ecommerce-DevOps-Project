@@ -51,6 +51,48 @@ jobs:
           npm run build
           echo "✅ Frontend build completed."
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Get Terraform Outputs
+        id: tf_outputs
+        run: |
+          echo "BACKEND_IPS=$(terraform output -json backend_ips | jq -r '.[]')" >> $GITHUB_ENV
+          echo "✅ Terraform outputs fetched."
+
+      - name: Update Nginx Configuration
+        run: |
+          echo "🚀 Updating Nginx configuration..."
+          
+          # Get backend IPs dynamically from Terraform
+          BACKENDS=$(echo $BACKEND_IPS | tr " " "\n")
+
+          # Build the upstream block for nginx
+          UPSTREAM=""
+          for ip in $BACKENDS; do
+            UPSTREAM+="\t\tserver ${ip}:8000;\n"
+          done
+
+          # Inject into nginx.conf.template
+          sed "/{{BACKEND_SERVERS}}/{
+              s/{{BACKEND_SERVERS}}/${UPSTREAM}/
+          }" FrontEnd/nginx.conf.template > FrontEnd/nginx.conf
+
+          echo "✅ Nginx configuration updated."
+
       - name: Build Frontend Docker Image
         run: |
           echo "🐳 Building frontend Docker image..."
