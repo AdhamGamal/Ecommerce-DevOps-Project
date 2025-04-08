@@ -31,7 +31,7 @@ jobs:
       run: terraform validate -chdir=${{ env.TF_WORKING_DIR }}
 
     - name: Terraform Plan
-      run: terraform plan -chdir=${{ env.TF_WORKING_DIR }} -var="aws_region=${{ vars.AWS_REGION }}" -var="backend_port=${{ inputs.backend_port || 8000 }}"
+      run: terraform plan -chdir=${{ env.TF_WORKING_DIR }} -var="aws_region=${{ vars.AWS_REGION }}" -var="backend_port=${{ vars.BACKEND_PORT || 8000 }}"
 
     - name: Terraform Apply
       run: terraform apply -auto-approve -chdir=${{ env.TF_WORKING_DIR }}
