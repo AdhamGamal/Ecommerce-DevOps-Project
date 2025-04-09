@@ -4,14 +4,11 @@ FROM node:lts-alpine
 # Set working directory
 WORKDIR /app
 
-# Remove default Nginx static files
-RUN rm -rf ./*
-
 # Copy package.json and package-lock.json
-COPY BackEnd ./
-
-# Expose the backend port
-EXPOSE 5000
+COPY BackEnd/index.js ./
+COPY BackEnd/db.js ./
+COPY BackEnd/src ./src
+COPY BackEnd/node_modules ./node_modules
 
 # Start the server
-CMD ["node", "server.js"]
+CMD ["node", "index.js"]

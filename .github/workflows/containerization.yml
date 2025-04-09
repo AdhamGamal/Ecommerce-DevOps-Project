@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "🚀 Setting up backend..."
           cd BackEnd
-          npm install
+          npm install --only=production
           echo "✅ Backend dependencies installed."
 
       - name: Build Backend Docker Image
@@ -79,13 +79,11 @@ jobs:
           # Build the upstream block for nginx
           UPSTREAM=""
           for ip in $BACKENDS; do
-            UPSTREAM+="\t\tserver ${ip}:8000;\n"
+            UPSTREAM+="server ${ip}:${{ vars.BACKEND_PORT || 8000 }};\n"
           done
 
           # Inject into nginx.conf.template
-          sed "/{{BACKEND_SERVERS}}/{
-              s/{{BACKEND_SERVERS}}/${UPSTREAM}/
-          }" FrontEnd/nginx.conf.template > FrontEnd/nginx.conf
+          sed 's|\${BACKEND_SERVERS}|${UPSTREAM}|' FrontEnd/default.conf.template > FrontEnd/default.conf
 
           echo "✅ Nginx configuration updated."
 
