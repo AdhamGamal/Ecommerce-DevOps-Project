@@ -1,6 +1,7 @@
 variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string
+  default     = "eu-central-1"
 }
 
 variable "vpc_cidr" {
@@ -42,4 +43,5 @@ variable "backend_port" {
 variable "key_pair_name" {
   description = "Name of the existing AWS EC2 Key Pair"
   type        = string
+  default     = "elegance-key-pair"
 }
