@@ -83,7 +83,7 @@ jobs:
           done
 
           # Inject into nginx.conf.template
-          sed 's|\${BACKEND_SERVERS}|${UPSTREAM}|' FrontEnd/default.conf.template > FrontEnd/default.conf
+          sed "s|\${BACKEND_SERVERS}|${UPSTREAM}|" FrontEnd/default.conf.template > FrontEnd/default.conf
 
           echo "✅ Nginx configuration updated."
 
