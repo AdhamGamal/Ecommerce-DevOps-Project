@@ -5,7 +5,6 @@ import { Cart, Share, WishList } from "../../utils/Icons";
 import StarRating from "../UI/StarRating";
 import post from "../../assets/images/post2.jpg";
 import ShareModal from "../UI/ShareModal";
-import URL from "../../utils/URL";
 
 const CategoryProducts = () => {
   const [searchParams] = useSearchParams();
@@ -25,7 +24,7 @@ const CategoryProducts = () => {
       if (!subCategoryId) return; // Prevent API call if subCategoryId is missing
 
       try {
-        const response = await axios.post(`${URL}/products/subcategory`, {
+        const response = await axios.post(`${process.env.URL}/products/subcategory`, {
           subCategoryId,
         });
         setProducts(response.data.products);

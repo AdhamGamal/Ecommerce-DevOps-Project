@@ -5,7 +5,6 @@ import ProductImageSwiper from "./ProductImageSwiper";
 import ProductDetails from "./ProductDetails";
 import ProductReviews from "./ProductReviews";
 import AddReview from "./AddReview";
-import URL from "../../../utils/URL";
 
 const Product = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -16,7 +15,7 @@ const Product = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`${URL}/products/${id}`);
+        const response = await axios.get(`${process.env.URL}/products/${id}`);
         setProduct(response.data.product); // Assuming the API returns the product in a `product` field
         console.log(
           "🚀 ~ fetchProduct ~ response.data.product:",

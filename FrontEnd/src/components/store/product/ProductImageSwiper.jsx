@@ -5,7 +5,6 @@ import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
-import URL from "../../../utils/URL";
 
 const ProductImageSwiper = ({ product }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);

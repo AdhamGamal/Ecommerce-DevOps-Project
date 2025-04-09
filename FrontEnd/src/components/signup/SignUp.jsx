@@ -10,7 +10,6 @@ import WebLogo from "../UI/WebLogo";
 import Button from "../UI/Button";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons from react-icons
 import { toast } from "react-toastify";
-import URL from "../../utils/URL";
 import signUpSchema from "../models/SignUpSchema";
 
 const SignUp = () => {
@@ -40,10 +39,10 @@ const SignUp = () => {
 
   const onSubmit = async (data) => {
     console.log(data);
-    console.log(URL);
+    console.log(process.env.URL);
 
     try {
-      const response = await axios.post(`${URL}/users/`, data);
+      const response = await axios.post(`${process.env.URL}/users/`, data);
 
       console.log("🚀 ~ onSubmit ~ response:", response);
       if (response.status === 201) {

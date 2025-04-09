@@ -4,7 +4,6 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
 import Loading from "../UI/Loading";
-import URL from "../../utils/URL";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -14,7 +13,7 @@ const ExploreOurCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${URL}/product-category/`);
+        const response = await axios.get(`${process.env.URL}/product-category/`);
         // console.log("🚀 ~ fetchCategories ~ response.data:", response.data);
         setProductCategories(response.data.productCategories); // Adjust based on actual API response
       } catch (error) {

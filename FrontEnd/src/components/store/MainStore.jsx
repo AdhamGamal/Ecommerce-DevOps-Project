@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 import Button from "../UI/Button";
 import Loading from "../UI/Loading";
-import URL from "../../utils/URL";
 import axios from "axios";
 
 const MainStore = () => {
@@ -28,7 +27,7 @@ const MainStore = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${URL}/product-sub-category/`);
+        const response = await axios.get(`${process.env.URL}/product-sub-category/`);
         setProductSubCategories(response.data.categories); // Set the fetched categories
         // console.log(
         //   "🚀 ~ fetchCategories ~ response.data.categories:",

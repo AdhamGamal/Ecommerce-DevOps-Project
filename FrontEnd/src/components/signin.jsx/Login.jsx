@@ -8,7 +8,6 @@ import backgroundImage from "../../assets/images/formBg.avif"; // Import the bac
 import WebLogo from "../UI/WebLogo";
 import Button from "../UI/Button";
 import { toast } from "react-toastify";
-import URL from "../../utils/URL";
 import signInSchema from "../models/SignInSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { login, updateUserState } from "../../store/slices/authSlice";
@@ -34,7 +33,7 @@ const Login = () => {
     console.log(data);
 
     try {
-      const response = await axios.post(`${URL}/users/login`, data);
+      const response = await axios.post(`${process.env.URL}/users/login`, data);
       if (response.status === 200) {
         console.log("🚀 ~ onSubmit ~ response:", response);
         const { token, user } = response.data;
