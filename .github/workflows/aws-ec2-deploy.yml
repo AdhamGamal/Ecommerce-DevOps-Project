@@ -57,16 +57,6 @@ jobs:
         run: |
           echo "${{ secrets.AWS_EC2_SSH_KEY }}" > $ANSIBLE_DIR/aws-ec2-key.pem
           chmod 600 $ANSIBLE_DIR/aws-ec2-key.pem
-  
-      - name: Create Ansible Inventory File
-        run: |
-          echo "[backend]" > $ANSIBLE_DIR/inventory.ini
-          IFS=$'\n'
-          for ip in $BACKEND_IPS; do
-            echo "$ip" >> $ANSIBLE_DIR/inventory.ini
-          done
-          echo "[frontend]" >> $ANSIBLE_DIR/inventory.ini
-          echo "$FRONTEND_IP" >> $ANSIBLE_DIR/inventory.ini
 
       - name: Install Ansible
         run: |
@@ -74,6 +64,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible
           echo "✅ Ansible installed."
+
+      - name: Create Ansible Inventory File
+        run: |
+          # Create backend section
+          echo "[backend]" > $ANSIBLE_DIR/inventory.ini
+          # Split tab-separated IPs and write one per line
+          echo "$BACKEND_IPS" | tr '\t' '\n' | sed '/^$/d' >> $ANSIBLE_DIR/inventory.ini
+          
+          # Create frontend section
+          echo -e "\n[frontend]" >> $ANSIBLE_DIR/inventory.ini
+          echo "$FRONTEND_IP" >> $ANSIBLE_DIR/inventory.ini
+          
+          # Verify the inventory file
+          echo "Generated inventory file:"
+          cat $ANSIBLE_DIR/inventory.ini
+      
+      - name: Verify Ansible Configuration
+        run: |
+          cd $ANSIBLE_DIR
+          echo "Ansible configuration:"
+          ansible-config dump --only-changed
+          echo "Inventory contents:"
+          ansible-inventory --list -y
 
       - name: Deploy Backend with Ansible
         run: |
