@@ -1,0 +1,67 @@
+---
+- name: Build and Run Frontend on Remote Hosts
+  hosts: frontend
+  become: yes
+
+  tasks:
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Ensure frontend container is absent
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove existing frontend image
+      shell: docker rmi {{ frontend_image }} || true
+      ignore_errors: yes
+
+    - name: Pull Frontend Docker image
+      docker_image:
+        name: "{{ frontend_image }}"
+        source: pull
+
+    - name: Stop any process using port {{ frontend_port }}
+      shell: |
+        lsof -i :{{ frontend_port }} -t | xargs -r sudo kill -9
+      ignore_errors: yes
+
+    - name: Run Frontend container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ frontend_image }}"
+        ports:
+          - "{{ frontend_port }}:{{ frontend_port }}"
+        restart_policy: always
+        state: started
+        env:
+          URL: "{{ backend_url }}"
+
+    - name: Verify frontend container is running
+      shell: docker ps --filter "name={{ container_name }}"
+      register: container_status
+      changed_when: false
+
+    - name: Show container status
+      debug:
+        var: container_status.stdout_lines
+
+    - name: Check container logs for errors
+      shell: docker logs {{ container_name }}
+      register: container_logs
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Display container logs
+      debug:
+        var: container_logs.stdout_lines

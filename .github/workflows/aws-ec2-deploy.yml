@@ -1,0 +1,97 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to Docker Hub"]
+    types:
+      - completed
+
+env:
+  ANSIBLE_DIR: 'Devops/ansible'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Fetch EC2 Public IPs
+        id: fetch_ips
+        run: |
+          echo "🚀 Fetching backend EC2 instance IPs using AWS CLI..."
+          BACKEND_IPS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Elegance-Backend*" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].PublicIpAddress" --output text)
+
+          FRONTEND_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Elegance-Frontend*" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].PublicIpAddress" --output text)
+
+          # Check if any IPs were returned
+          if [ -z "$BACKEND_IPS" ]; then
+            echo "❌ No backend EC2 IPs found. Please ensure the backend instances are running and have public IPs."
+            exit 1  # Abort the workflow
+          fi
+
+          if [ -z "$FRONTEND_IP" ]; then
+            echo "❌ No frontend EC2 IP found. Please ensure the frontend instance is running and has a public IP."
+            exit 1  # Abort the workflow
+          fi
+
+          # Set the IPs to GitHub environment variables
+          echo "BACKEND_IPS=${BACKEND_IPS}" >> $GITHUB_ENV
+          echo "FRONTEND_IP=${FRONTEND_IP}" >> $GITHUB_ENV
+
+          echo "✅ EC2 IPs fetched successfully."
+
+      - name: Create Private Key File
+        run: |
+          echo "${{ secrets.AWS_EC2_SSH_KEY }}" > $ANSIBLE_DIR/aws-ec2-key.pem
+          chmod 600 $ANSIBLE_DIR/aws-ec2-key.pem
+  
+      - name: Create Ansible Inventory File
+        run: |
+          echo "[backend]" > $ANSIBLE_DIR/inventory.ini
+          IFS=$'\n'
+          for ip in $BACKEND_IPS; do
+            echo "$ip" >> $ANSIBLE_DIR/inventory.ini
+          done
+          echo "[frontend]" >> $ANSIBLE_DIR/inventory.ini
+          echo "$FRONTEND_IP" >> $ANSIBLE_DIR/inventory.ini
+
+      - name: Install Ansible
+        run: |
+          echo "📦 Installing Ansible..."
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          echo "✅ Ansible installed."
+
+      - name: Deploy Backend with Ansible
+        run: |
+          cd $ANSIBLE_DIR
+          ansible-playbook playbook_backend.yml \
+            --extra-vars "container_name=backend \
+            backend_image=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.BACKEND_IMAGE }}:latest \
+            backend_port=${{ vars.BACKEND_PORT || 8000 }} \
+            DB_USER_NAME=${{ secrets.DB_USER_NAME }} \
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            DB_NAME=${{ secrets.DB_NAME }} \
+            DB_URI=${{ secrets.DB_URI }}
+
+      - name: Deploy Frontend with Ansible
+        run: |
+          cd $ANSIBLE_DIR
+          ansible-playbook playbook_frontend.yml \
+            --extra-vars "container_name=frontend \
+            frontend_image=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.FRONTEND_IMAGE }}:latest \
+            frontend_port=${{ vars.FRONTEND_PORT || 80 }} \
+            backend_url=${{ secrets.BACKEND_URL || '/api/' }}
