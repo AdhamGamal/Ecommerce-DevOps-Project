@@ -10,6 +10,7 @@ DB_URI="mongodb+srv://elegance_***&appName=Cluster0"
 CLOUDINARY_CLOUD_NAME="*********"
 CLOUDINARY_API_KEY="***************"
 CLOUDINARY_API_SECRET="MT309***************-******"
+ENCRYPTION_KEY="my******"
 backend_port="8000"
 frontend_port="80"
 
@@ -84,6 +85,7 @@ docker run -d \
   -e DB_NAME="$DB_NAME" \
   -e DB_URI="$DB_URI" \
   -e HASHING_COST="10" \
+  -e ENCRYPTION_KEY="$ENCRYPTION_KEY" \
   -e URL="/api/" \
   elegance-backend:local
 

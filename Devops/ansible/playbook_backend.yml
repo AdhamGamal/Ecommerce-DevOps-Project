@@ -51,6 +51,7 @@
           DB_NAME: "{{ DB_NAME }}"
           DB_URI: "{{ DB_URI }}"
           HASHING_COST: "10"
+          ENCRYPTION_KEY: "{{ ENCRYPTION_KEY }}"
 
     - name: Verify container is running
       shell: docker ps --filter "name={{ container_name }}"

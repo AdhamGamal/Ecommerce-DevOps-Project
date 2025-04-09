@@ -98,7 +98,8 @@ jobs:
             DB_USER_NAME=${{ secrets.DB_USER_NAME }} \
             DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             DB_NAME=${{ secrets.DB_NAME }} \
-            DB_URI=${{ secrets.DB_URI }}"
+            DB_URI=${{ secrets.DB_URI }} \
+            ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}"
 
       - name: Deploy Frontend with Ansible
         run: |
