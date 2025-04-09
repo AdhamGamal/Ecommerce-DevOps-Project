@@ -107,5 +107,4 @@ jobs:
           ansible-playbook playbook_frontend.yml \
             --extra-vars "container_name=frontend \
             frontend_image=${{ vars.DOCKERHUB_USERNAME }}/${{ vars.FRONTEND_IMAGE }}:latest \
-            frontend_port=${{ vars.FRONTEND_PORT || 80 }} \
-            backend_url=${{ secrets.BACKEND_URL || '/api/' }}"
+            frontend_port=${{ vars.FRONTEND_PORT || 80 }}"

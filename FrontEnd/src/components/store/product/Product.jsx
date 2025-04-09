@@ -15,7 +15,7 @@ const Product = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`${process.env.URL}/products/${id}`);
+        const response = await axios.get(`/api/products/${id}`);
         setProduct(response.data.product); // Assuming the API returns the product in a `product` field
         console.log(
           "🚀 ~ fetchProduct ~ response.data.product:",

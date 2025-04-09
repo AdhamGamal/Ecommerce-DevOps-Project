@@ -33,7 +33,7 @@ const Login = () => {
     console.log(data);
 
     try {
-      const response = await axios.post(`${process.env.URL}/users/login`, data);
+      const response = await axios.post(`/api/users/login`, data);
       if (response.status === 200) {
         console.log("🚀 ~ onSubmit ~ response:", response);
         const { token, user } = response.data;

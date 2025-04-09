@@ -24,7 +24,7 @@ const CategoryProducts = () => {
       if (!subCategoryId) return; // Prevent API call if subCategoryId is missing
 
       try {
-        const response = await axios.post(`${process.env.URL}/products/subcategory`, {
+        const response = await axios.post(`/api/products/subcategory`, {
           subCategoryId,
         });
         setProducts(response.data.products);

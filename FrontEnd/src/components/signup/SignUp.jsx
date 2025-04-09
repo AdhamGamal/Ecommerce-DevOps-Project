@@ -39,10 +39,10 @@ const SignUp = () => {
 
   const onSubmit = async (data) => {
     console.log(data);
-    console.log(process.env.URL);
+    console.log("/api/");
 
     try {
-      const response = await axios.post(`${process.env.URL}/users/`, data);
+      const response = await axios.post(`/api/users/`, data);
 
       console.log("🚀 ~ onSubmit ~ response:", response);
       if (response.status === 201) {

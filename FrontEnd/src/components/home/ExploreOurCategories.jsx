@@ -13,7 +13,7 @@ const ExploreOurCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${process.env.URL}/product-category/`);
+        const response = await axios.get(`/api/product-category/`);
         // console.log("🚀 ~ fetchCategories ~ response.data:", response.data);
         setProductCategories(response.data.productCategories); // Adjust based on actual API response
       } catch (error) {

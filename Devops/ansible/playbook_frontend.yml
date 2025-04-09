@@ -44,8 +44,6 @@
           - "{{ frontend_port }}:{{ frontend_port }}"
         restart_policy: always
         state: started
-        env:
-          URL: "{{ backend_url }}"
 
     - name: Verify frontend container is running
       shell: docker ps --filter "name={{ container_name }}"
