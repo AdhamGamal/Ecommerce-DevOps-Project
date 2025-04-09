@@ -3,6 +3,14 @@
 set -e
 
 # Variables
+DB_USER_NAME="elegance_****"
+DB_PASSWORD="XYQmb***********"
+DB_NAME="elegance-**********"
+DB_URI="mongodb+srv://elegance_***&appName=Cluster0"
+CLOUDINARY_CLOUD_NAME="*********"
+CLOUDINARY_API_KEY="***************"
+CLOUDINARY_API_SECRET="MT309***************-******"
+ENCRYPTION_KEY="my******"
 HASHING_COST="10"
 backend_port="8000"
 frontend_port="80"
