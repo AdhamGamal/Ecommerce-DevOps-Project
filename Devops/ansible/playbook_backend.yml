@@ -1,6 +1,6 @@
 ---
 - name: Build and Run Backend on Remote Hosts
-  hosts: backend_servers
+  hosts: backend
   become: yes
 
   tasks:
