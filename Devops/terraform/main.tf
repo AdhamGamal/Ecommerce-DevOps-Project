@@ -25,7 +25,6 @@ resource "aws_vpc" "elegance_vpc" {
 resource "aws_subnet" "elegance_public_subnet" {
   vpc_id                  = aws_vpc.elegance_vpc.id
   cidr_block              = var.public_subnet_cidr
-  availability_zone       = "${var.aws_region}a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -52,15 +51,18 @@ resource "aws_route_table" "elegance_rt" {
   tags = {
     Name = "Elegance-Route-Table"
   }
+
+  depends_on = [aws_internet_gateway.elegance_gw] # Ensure the gateway is created first
 }
 
 resource "aws_route_table_association" "elegance_rta" {
   subnet_id      = aws_subnet.elegance_public_subnet.id
   route_table_id = aws_route_table.elegance_rt.id
+
+  depends_on = [aws_route_table.elegance_rt] # Ensure the route table is created first
 }
 
 resource "aws_security_group" "elegance_sg" {
-  name        = "elegance-sg"
   description = "Allow HTTP, API, and restricted SSH"
   vpc_id      = aws_vpc.elegance_vpc.id
 
@@ -111,6 +113,8 @@ resource "aws_instance" "elegance_backend" {
   tags = {
     Name = "Elegance-Backend-${count.index + 1}"
   }
+
+  depends_on = [aws_subnet.elegance_public_subnet, aws_security_group.elegance_sg] # Ensure subnet and security group are created
 }
 
 resource "aws_instance" "elegance_frontend" {
@@ -123,4 +127,6 @@ resource "aws_instance" "elegance_frontend" {
   tags = {
     Name = "Elegance-Frontend"
   }
+
+  depends_on = [aws_subnet.elegance_public_subnet, aws_security_group.elegance_sg] # Ensure subnet and security group are created
 }
