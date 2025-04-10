@@ -13,6 +13,10 @@ jobs:
     if: inputs.confirm_destroy == 'destroy'
     runs-on: ubuntu-latest
 
+    env:
+      TERRAFORM_TAG: "Name"
+      TERRAFORM_VALUE_PREFIX: "Elegance-"
+
     steps:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -24,9 +28,6 @@ jobs:
     - name: Destroy Resources
       id: destroy_resources
       run: |
-        TERRAFORM_TAG="Name"
-        TERRAFORM_VALUE_PREFIX="Elegance-"
-
         echo "Starting destruction of resources..."
 
         # Terminate EC2 instances
@@ -43,6 +44,7 @@ jobs:
           
           echo "Waiting for instances to terminate..."
           aws ec2 wait instance-terminated --instance-ids $INSTANCE_IDS
+          echo "Instances terminated successfully."
         else
           echo "No instances found to terminate"
         fi
@@ -50,9 +52,7 @@ jobs:
     - name: Destroy VPC Components
       id: destroy_vpc
       run: |
-        TERRAFORM_TAG="Name"
-        TERRAFORM_VALUE_PREFIX="Elegance-"
-
+        echo "Fetching VPC ID..."
         VPC_ID=$(aws ec2 describe-vpcs \
           --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Vpcs[0].VpcId" \
@@ -68,6 +68,7 @@ jobs:
         echo "Processing VPC: $VPC_ID"
 
         # Delete Internet Gateway
+        echo "Fetching Internet Gateway ID..."
         IGW_ID=$(aws ec2 describe-internet-gateways \
           --filters "Name=attachment.vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "InternetGateways[0].InternetGatewayId" \
@@ -84,6 +85,7 @@ jobs:
         sleep 5
 
         # Delete Subnets
+        echo "Fetching Subnet IDs..."
         SUBNET_IDS=$(aws ec2 describe-subnets \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Subnets[].SubnetId" \
@@ -92,6 +94,7 @@ jobs:
         if [ -n "$SUBNET_IDS" ]; then
           echo "Deleting subnets: $SUBNET_IDS"
           for SUBNET_ID in $SUBNET_IDS; do
+            echo "Deleting subnet: $SUBNET_ID"
             aws ec2 delete-subnet --subnet-id $SUBNET_ID || true
           done
         else
@@ -101,6 +104,7 @@ jobs:
         sleep 5
 
         # Delete Route Tables
+        echo "Fetching Route Table IDs..."
         RT_IDS=$(aws ec2 describe-route-tables \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "RouteTables[?Associations[?Main!=true]].RouteTableId" \
@@ -109,16 +113,20 @@ jobs:
         if [ -n "$RT_IDS" ]; then
           echo "Deleting route tables: $RT_IDS"
           for RT_ID in $RT_IDS; do
+            echo "Processing route table: $RT_ID"
             # First disassociate any route table associations
+            echo "Disassociating route table associations..."
             ASSOC_IDS=$(aws ec2 describe-route-tables \
               --route-table-ids $RT_ID \
               --query "RouteTables[].Associations[].RouteTableAssociationId" \
               --output text)
               
             for ASSOC_ID in $ASSOC_IDS; do
+              echo "Disassociating route table association: $ASSOC_ID"
               aws ec2 disassociate-route-table --association-id $ASSOC_ID || true
             done
             
+            echo "Deleting route table: $RT_ID"
             aws ec2 delete-route-table --route-table-id $RT_ID || true
           done
         else
@@ -126,6 +134,7 @@ jobs:
         fi
 
         # Delete Security Groups
+        echo "Fetching Security Group IDs..."
         SG_IDS=$(aws ec2 describe-security-groups \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "SecurityGroups[?GroupName!='default'].GroupId" \
@@ -134,6 +143,7 @@ jobs:
         if [ -n "$SG_IDS" ]; then
           echo "Deleting security groups: $SG_IDS"
           for SG_ID in $SG_IDS; do
+            echo "Deleting security group: $SG_ID"
             aws ec2 delete-security-group --group-id $SG_ID || true
           done
         else
@@ -152,7 +162,7 @@ jobs:
       run: |
         echo "Checking if all resources are gone..."
         REMAINING_VPCS=$(aws ec2 describe-vpcs \
-          --filters "Name=tag:Name,Values=Elegance-*" \
+          --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Vpcs[].VpcId" \
           --output text)
 
