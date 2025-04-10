@@ -78,11 +78,14 @@ jobs:
           echo "Detaching and deleting IGW: $IGW_ID"
           aws ec2 detach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID || true
           aws ec2 delete-internet-gateway --internet-gateway-id $IGW_ID || true
+
+          # Wait until the Internet Gateway is deleted
+          echo "Waiting for IGW to be deleted..."
+          aws ec2 wait internet-gateway-deleted --internet-gateway-id $IGW_ID
+          echo "IGW deleted successfully."
         else
           echo "No IGW found to delete"
         fi
-
-        sleep 5
 
         # Delete Subnets
         echo "Fetching Subnet IDs..."
@@ -96,12 +99,15 @@ jobs:
           for SUBNET_ID in $SUBNET_IDS; do
             echo "Deleting subnet: $SUBNET_ID"
             aws ec2 delete-subnet --subnet-id $SUBNET_ID || true
+
+            # Wait until the subnet is deleted
+            echo "Waiting for subnet $SUBNET_ID to be deleted..."
+            aws ec2 wait subnet-available --subnet-id $SUBNET_ID
+            echo "Subnet $SUBNET_ID deleted successfully."
           done
         else
           echo "No subnets found to delete"
         fi
-
-        sleep 5
 
         # Delete Route Tables
         echo "Fetching Route Table IDs..."
@@ -128,6 +134,11 @@ jobs:
             
             echo "Deleting route table: $RT_ID"
             aws ec2 delete-route-table --route-table-id $RT_ID || true
+
+            # Wait until the route table is deleted
+            echo "Waiting for route table $RT_ID to be deleted..."
+            aws ec2 wait route-table-deleted --route-table-id $RT_ID
+            echo "Route table $RT_ID deleted successfully."
           done
         else
           echo "No route tables found to delete"
@@ -145,19 +156,27 @@ jobs:
           for SG_ID in $SG_IDS; do
             echo "Deleting security group: $SG_ID"
             aws ec2 delete-security-group --group-id $SG_ID || true
+
+            # Wait until the security group is deleted
+            echo "Waiting for security group $SG_ID to be deleted..."
+            aws ec2 wait security-group-deleted --group-id $SG_ID
+            echo "Security group $SG_ID deleted successfully."
           done
         else
           echo "No security groups found to delete"
         fi
 
-        sleep 5
-
         # Delete VPC
         echo "Deleting VPC: $VPC_ID"
         aws ec2 delete-vpc --vpc-id $VPC_ID || true
 
-        echo "Destruction of resources completed"
+        # Wait until the VPC is deleted
+        echo "Waiting for VPC $VPC_ID to be deleted..."
+        aws ec2 wait vpc-available --vpc-id $VPC_ID
+        echo "VPC $VPC_ID deleted successfully."
 
+        echo "Destruction of resources completed"
+  
     - name: Confirm Cleanup Success
       run: |
         echo "Checking if all resources are gone..."
