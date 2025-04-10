@@ -134,3 +134,4 @@ jobs:
           echo "✅ All tagged VPCs deleted successfully."
         else
           echo "⚠️ VPCs still exist: $REMAINING_VPCS"
+        fi
