@@ -103,7 +103,7 @@ jobs:
         # Delete Route Tables
         RT_IDS=$(aws ec2 describe-route-tables \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
-          --query "RouteTables[?Associations[?Main!=`true`]].RouteTableId" \
+          --query "RouteTables[?Associations[?Main!=true]].RouteTableId" \
           --output text)
 
         if [ -n "$RT_IDS" ]; then
