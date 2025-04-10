@@ -16,7 +16,6 @@ jobs:
     env:
       TERRAFORM_TAG: "Name"
       TERRAFORM_VALUE_PREFIX: "Elegance-"
-      SLEEP_PERIOD: 2
 
     steps:
     - name: Configure AWS credentials
@@ -26,209 +25,112 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ vars.AWS_REGION }}
 
-    - name: Destroy Resources
-      id: destroy_resources
+    - name: Destroy EC2 Instances
       run: |
-        echo "Starting destruction of resources..."
-
-        echo "Fetching EC2 instances..."
+        echo "🔍 Fetching EC2 instances..."
         INSTANCE_IDS=$(aws ec2 describe-instances \
           --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Reservations[].Instances[].InstanceId" \
           --output text)
 
-        echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
-
         if [ -n "$INSTANCE_IDS" ]; then
-          echo "Terminating instances: $INSTANCE_IDS"
+          echo "💥 Terminating instances: $INSTANCE_IDS"
           aws ec2 terminate-instances --instance-ids $INSTANCE_IDS
-          
-          echo "Waiting for instances to terminate..."
+          echo "⏳ Waiting for termination..."
           aws ec2 wait instance-terminated --instance-ids $INSTANCE_IDS
-          echo "Instances terminated successfully."
+          echo "✅ Instances terminated."
         else
-          echo "No instances found to terminate"
+          echo "ℹ️ No instances found."
         fi
 
     - name: Destroy VPC Components
-      id: destroy_vpc
       run: |
-        echo "Fetching VPC ID..."
+        echo "🔧 Fetching VPC ID..."
         VPC_ID=$(aws ec2 describe-vpcs \
           --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Vpcs[0].VpcId" \
           --output text)
 
-        echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
-
         if [ -z "$VPC_ID" ] || [ "$VPC_ID" == "None" ]; then
-          echo "No VPC found to delete"
+          echo "ℹ️ No VPC found. Exiting."
           exit 0
         fi
 
         echo "Processing VPC: $VPC_ID"
 
-        echo "Fetching Internet Gateway ID..."
+        # Delete Internet Gateway
         IGW_ID=$(aws ec2 describe-internet-gateways \
           --filters "Name=attachment.vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "InternetGateways[0].InternetGatewayId" \
           --output text)
-
-        if [ -n "$IGW_ID" ] && [ "$IGW_ID" != "None" ]; then
-          echo "Detaching and deleting IGW: $IGW_ID"
+        
+        if [ "$IGW_ID" != "None" ] && [ -n "$IGW_ID" ]; then
+          echo "❎ Deleting IGW: $IGW_ID"
           aws ec2 detach-internet-gateway --internet-gateway-id $IGW_ID --vpc-id $VPC_ID || true
           aws ec2 delete-internet-gateway --internet-gateway-id $IGW_ID || true
-
-          echo "Waiting for IGW to be deleted..."
-          while true; do
-            IGW_EXISTS=$(aws ec2 describe-internet-gateways \
-              --internet-gateway-ids $IGW_ID \
-              --query "InternetGateways[0].InternetGatewayId" \
-              --output text)
-            if [ "$IGW_EXISTS" == "None" ]; then
-              echo "IGW deleted successfully."
-              break
-            else
-              echo "IGW still exists, retrying in $SLEEP_PERIOD seconds..."
-              sleep $SLEEP_PERIOD
-            fi
-          done
         else
-          echo "No IGW found to delete"
+          echo "ℹ️ No IGW found."
         fi
 
-        echo "Fetching Subnet IDs..."
+        # Delete Subnets
         SUBNET_IDS=$(aws ec2 describe-subnets \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Subnets[].SubnetId" \
           --output text)
 
         if [ -n "$SUBNET_IDS" ]; then
-          echo "Deleting subnets: $SUBNET_IDS"
+          echo "❎ Deleting subnets: $SUBNET_IDS"
           for SUBNET_ID in $SUBNET_IDS; do
-            SUBNET_EXISTS=$(aws ec2 describe-subnets \
-              --subnet-ids $SUBNET_ID \
-              --query "Subnets[0].SubnetId" \
-              --output text)
-
-            if [ "$SUBNET_EXISTS" != "None" ]; then
-              echo "Deleting subnet: $SUBNET_ID"
-              aws ec2 delete-subnet --subnet-id $SUBNET_ID || true
-
-              echo "Waiting for subnet $SUBNET_ID to be deleted..."
-              while true; do
-                SUBNET_EXISTS=$(aws ec2 describe-subnets \
-                  --subnet-ids $SUBNET_ID \
-                  --query "Subnets[0].SubnetId" \
-                  --output text)
-                if [ "$SUBNET_EXISTS" == "None" ]; then
-                  echo "Subnet $SUBNET_ID deleted successfully."
-                  break
-                else
-                  echo "Subnet $SUBNET_ID still exists, retrying in $SLEEP_PERIOD seconds..."
-                  sleep $SLEEP_PERIOD
-                fi
-              done
-            else
-              echo "Subnet $SUBNET_ID does not exist, skipping deletion."
-            fi
+            aws ec2 delete-subnet --subnet-id $SUBNET_ID || true
           done
         else
-          echo "No subnets found to delete"
+          echo "ℹ️ No subnets found."
         fi
 
-        echo "Fetching Route Tables..."
-        RT_IDS=$(aws ec2 describe-route-tables \
-          --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
-          --query "RouteTables[?Associations[?Main!=true]].RouteTableId" \
-          --output text)
-
-        if [ -n "$RT_IDS" ]; then
-          for RT_ID in $RT_IDS; do
-            # Check if the route table exists before deletion
-            RT_EXISTS=$(aws ec2 describe-route-tables --route-table-ids $RT_ID --query "RouteTables[0].RouteTableId" --output text)
-
-            if [ "$RT_EXISTS" != "None" ]; then
-              echo "Deleting route table: $RT_ID"
-              aws ec2 delete-route-table --route-table-id $RT_ID || true
-              
-              echo "Waiting for route table $RT_ID to be deleted..."
-              while true; do
-                RT_EXISTS=$(aws ec2 describe-route-tables \
-                  --route-table-ids $RT_ID \
-                  --query "RouteTables[0].RouteTableId" \
-                  --output text)
-                if [ "$RT_EXISTS" == "None" ]; then
-                  echo "Route table $RT_ID deleted successfully."
-                  break
-                else
-                  echo "Route table $RT_ID still exists, retrying in $SLEEP_PERIOD seconds..."
-                  sleep $SLEEP_PERIOD
-                fi
-              done
-            else
-              echo "Route table $RT_ID does not exist, skipping deletion."
-            fi
-          done
-        else
-          echo "No route tables found to delete"
-        fi
-
-        echo "Fetching Security Groups..."
+        # Delete Security Groups
         SG_IDS=$(aws ec2 describe-security-groups \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "SecurityGroups[?GroupName!='default'].GroupId" \
           --output text)
 
         if [ -n "$SG_IDS" ]; then
+          echo "❎ Deleting security groups: $SG_IDS"
           for SG_ID in $SG_IDS; do
-            # Check if the security group exists before deletion
-            SG_EXISTS=$(aws ec2 describe-security-groups --group-ids $SG_ID --query "SecurityGroups[0].GroupId" --output text)
-
-            if [ "$SG_EXISTS" != "None" ]; then
-              echo "Deleting security group: $SG_ID"
-              aws ec2 delete-security-group --group-id $SG_ID || true
-            else
-              echo "Security group $SG_ID does not exist, skipping deletion."
-            fi
+            aws ec2 delete-security-group --group-id $SG_ID || true
           done
         else
-          echo "No security groups found to delete"
+          echo "ℹ️ No non-default security groups found."
         fi
 
-        echo "Deleting VPC $VPC_ID"
-        VPC_EXISTS=$(aws ec2 describe-vpcs --vpc-ids $VPC_ID --query "Vpcs[0].VpcId" --output text)
+        # Delete Route Tables
+        RTB_IDS=$(aws ec2 describe-route-tables \
+          --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
+          --query "RouteTables[].RouteTableId" \
+          --output text)
 
-        if [ "$VPC_EXISTS" != "None" ]; then
-          aws ec2 delete-vpc --vpc-id $VPC_ID
-          
-          echo "Waiting for VPC $VPC_ID to be deleted..."
-          while true; do
-            VPC_EXISTS=$(aws ec2 describe-vpcs --vpc-ids $VPC_ID --query "Vpcs[0].VpcId" --output text)
-            if [ "$VPC_EXISTS" == "None" ]; then
-              echo "VPC $VPC_ID deleted successfully."
-              break
-            else
-              echo "VPC $VPC_ID still exists, retrying in $SLEEP_PERIOD seconds..."
-              sleep $SLEEP_PERIOD
-            fi
+        if [ -n "$RTB_IDS" ]; then
+          echo "❎ Deleting route tables: $RTB_IDS"
+          for RTB_ID in $RTB_IDS; do
+            aws ec2 delete-route-table --route-table-id $RTB_ID || true
           done
         else
-          echo "VPC $VPC_ID does not exist, skipping deletion."
+          echo "ℹ️ No route tables found."
         fi
 
-        echo "Destruction of resources completed"
+        # Delete VPC
+        echo "🚮 Deleting VPC: $VPC_ID"
+        aws ec2 delete-vpc --vpc-id $VPC_ID || true
+        echo "✅ VPC deletion initiated."
 
     - name: Confirm Cleanup Success
       run: |
-        echo "Checking if all resources are gone..."
+        echo "Checking for remaining resources..."
         REMAINING_VPCS=$(aws ec2 describe-vpcs \
           --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Vpcs[].VpcId" \
           --output text)
 
         if [ -z "$REMAINING_VPCS" ]; then
-          echo "✅ All tagged VPCs have been deleted successfully."
+          echo "✅ All tagged VPCs deleted successfully."
         else
-          echo "⚠️ Warning: Some VPCs still remain: $REMAINING_VPCS"
-        fi
+          echo "⚠️ VPCs still exist: $REMAINING_VPCS"
