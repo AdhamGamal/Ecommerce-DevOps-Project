@@ -6,13 +6,13 @@ on:
       confirm_destroy:
         description: 'Type "destroy" to confirm'
         required: true
-        default: 'cancel'
+        default: ''
 
 jobs:
   destroy:
     if: inputs.confirm_destroy == 'destroy'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -22,8 +22,8 @@ jobs:
         aws-region: ${{ vars.AWS_REGION }}
 
     - name: Destroy Resources
+      id: destroy_resources
       run: |
-        # Set the common tag key-value pair used by Terraform
         TERRAFORM_TAG="Name"
         TERRAFORM_VALUE_PREFIX="Elegance-"
 
@@ -34,6 +34,8 @@ jobs:
           --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "Reservations[].Instances[].InstanceId" \
           --output text)
+
+        echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
 
         if [ -n "$INSTANCE_IDS" ]; then
           echo "Terminating instances: $INSTANCE_IDS"
@@ -46,9 +48,17 @@ jobs:
         fi
 
     - name: Destroy VPC Components
+      id: destroy_vpc
       run: |
-        # Get VPC ID
-        VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" --query "Vpcs[0].VpcId" --output text)
+        TERRAFORM_TAG="Name"
+        TERRAFORM_VALUE_PREFIX="Elegance-"
+
+        VPC_ID=$(aws ec2 describe-vpcs \
+          --filters "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
+          --query "Vpcs[0].VpcId" \
+          --output text)
+
+        echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
 
         if [ -z "$VPC_ID" ] || [ "$VPC_ID" == "None" ]; then
           echo "No VPC found to delete"
@@ -57,7 +67,7 @@ jobs:
 
         echo "Processing VPC: $VPC_ID"
 
-        # Delete Internet Gateway if exists
+        # Delete Internet Gateway
         IGW_ID=$(aws ec2 describe-internet-gateways \
           --filters "Name=attachment.vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "InternetGateways[0].InternetGatewayId" \
@@ -70,6 +80,8 @@ jobs:
         else
           echo "No IGW found to delete"
         fi
+
+        sleep 5
 
         # Delete Subnets
         SUBNET_IDS=$(aws ec2 describe-subnets \
@@ -85,6 +97,8 @@ jobs:
         else
           echo "No subnets found to delete"
         fi
+
+        sleep 5
 
         # Delete Route Tables
         RT_IDS=$(aws ec2 describe-route-tables \
@@ -111,7 +125,7 @@ jobs:
           echo "No route tables found to delete"
         fi
 
-        # Delete Security Groups (except default)
+        # Delete Security Groups
         SG_IDS=$(aws ec2 describe-security-groups \
           --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:${TERRAFORM_TAG},Values=${TERRAFORM_VALUE_PREFIX}*" \
           --query "SecurityGroups[?GroupName!='default'].GroupId" \
@@ -126,9 +140,30 @@ jobs:
           echo "No security groups found to delete"
         fi
 
-        # Finally delete VPC
+        sleep 5
+
+        # Delete VPC
         echo "Deleting VPC: $VPC_ID"
         aws ec2 delete-vpc --vpc-id $VPC_ID || true
-        echo "VPC deletion initiated"
 
         echo "Destruction of resources completed"
+
+    - name: Confirm Cleanup Success
+      run: |
+        echo "Checking if all resources are gone..."
+        REMAINING_VPCS=$(aws ec2 describe-vpcs \
+          --filters "Name=tag:Name,Values=Elegance-*" \
+          --query "Vpcs[].VpcId" \
+          --output text)
+
+        if [ -z "$REMAINING_VPCS" ]; then
+          echo "✅ All tagged VPCs have been deleted successfully."
+        else
+          echo "⚠️ Warning: Some VPCs still remain: $REMAINING_VPCS"
+        fi
+
+    - name: Log Summary
+      run: |
+        echo "## 🧾 Destruction Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Instance IDs terminated:** \`${{ env.INSTANCE_IDS }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**VPC ID deleted:** \`${{ env.VPC_ID }}\`" >> $GITHUB_STEP_SUMMARY
