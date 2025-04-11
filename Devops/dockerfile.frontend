@@ -1,5 +1,5 @@
 # Use Nginx to serve the built React app
-FROM nginx:alpine
+FROM nginx:alpine-slim
 
 # Copy built frontend
 COPY FrontEnd/dist /usr/share/nginx/html
@@ -12,5 +12,8 @@ COPY FrontEnd/nginx.conf /etc/nginx/nginx.conf
 
 # Copy server configuration (http/server blocks)
 COPY FrontEnd/default.conf /etc/nginx/conf.d/
+
+# Copy custom error pages
+COPY FrontEnd/error-pages /usr/share/nginx/html/error-pages
 
 CMD ["nginx", "-g", "daemon off;"]
