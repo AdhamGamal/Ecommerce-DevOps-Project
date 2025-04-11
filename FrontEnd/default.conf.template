@@ -8,16 +8,61 @@ server {
     root /usr/share/nginx/html;             # Root directory for serving React static files.
     index index.html;                       # Default file served when a directory is requested.
 
-    # Custom error pages for specific API error codes.
+    # Custom error pages using internal directive
     error_page 400 /error-pages/400.html;
+    location = /error-pages/400.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 401 /error-pages/401.html;
+    location = /error-pages/401.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 403 /error-pages/403.html;
+    location = /error-pages/403.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 404 /error-pages/404.html;
+    location = /error-pages/404.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 405 /error-pages/405.html;
+    location = /error-pages/405.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 500 /error-pages/500.html;
+    location = /error-pages/500.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 502 /error-pages/502.html;
+    location = /error-pages/502.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 503 /error-pages/503.html;
+    location = /error-pages/503.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
     error_page 504 /error-pages/504.html;
+    location = /error-pages/504.html {
+        root /usr/share/nginx/html;
+        internal;
+    }
+
 
     # Serve static files (images, JS, CSS, etc.) from /static directory.
     location /static/ {
@@ -40,13 +85,6 @@ server {
 
         # Strip out the `/api` prefix before passing to the backend.
         rewrite ^/api/(.*) /$1 break;
-    }
-
-    # Serve custom error pages from the /error-pages/ directory.
-    location /error-pages/ {
-        internal;                                   # Prevents external access to /error-pages/ directly via the URL.
-        alias /usr/share/nginx/html/error-pages/;   # Path to custom error pages.
-        try_files $uri =404;                        # Fallback to 404 if page not found.
     }
 
     # Fallback to React's index.html for client-side routing.
