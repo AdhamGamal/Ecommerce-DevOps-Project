@@ -89,7 +89,7 @@ server {
 
     # Fallback to React's index.html for client-side routing.
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ =404;          # If page not found, return a 404 error.
     }
 
     # Cache static assets (JS, CSS, images, fonts, etc.) for better performance.
