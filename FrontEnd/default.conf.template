@@ -28,15 +28,15 @@ server {
         proxy_read_timeout 10s;             # Timeout for reading from backend.
 
         # Custom error pages for specific API error codes.
-        error_page 400 /error-pages/400/index.html;
-        error_page 401 /error-pages/401/index.html;
-        error_page 403 /error-pages/403/index.html;
-        error_page 404 /error-pages/404/index.html;
-        error_page 405 /error-pages/405/index.html;
-        error_page 500 /error-pages/500/index.html;
-        error_page 502 /error-pages/502/index.html;
-        error_page 503 /error-pages/503/index.html;
-        error_page 504 /error-pages/504/index.html;
+        error_page 400 /error-pages/400/400.html;
+        error_page 401 /error-pages/401/401.html;
+        error_page 403 /error-pages/403/403.html;
+        error_page 404 /error-pages/404/404.html;
+        error_page 405 /error-pages/405/405.html;
+        error_page 500 /error-pages/500/500.html;
+        error_page 502 /error-pages/502/502.html;
+        error_page 503 /error-pages/503/503.html;
+        error_page 504 /error-pages/504/504.html;
 
         # Strip out the `/api` prefix before passing to the backend.
         rewrite ^/api/(.*) /$1 break;
