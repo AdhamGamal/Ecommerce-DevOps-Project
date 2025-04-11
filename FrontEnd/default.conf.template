@@ -7,6 +7,7 @@ server {
     listen 80;                              # This server block listens on port 80 (HTTP).
     root /usr/share/nginx/html;             # Root directory for serving React static files.
     index index.html;                       # Default file served when a directory is requested.
+    proxy_intercept_errors on;              # Handle errors in this block.
 
     # Custom error pages using internal directive
     error_page 400 /error-pages/400.html;
@@ -79,7 +80,6 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;    # Forward chain of proxies.
         proxy_set_header X-Forwarded-Proto $scheme;                     # Original protocol (HTTP/HTTPS).
 
-        proxy_intercept_errors on;          # Handle errors in this block.
         proxy_connect_timeout 5s;           # Timeout for connecting to backend.
         proxy_read_timeout 10s;             # Timeout for reading from backend.
 
