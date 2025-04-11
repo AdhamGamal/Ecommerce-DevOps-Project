@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found - Page Missing</title>
+    <title>405 Method Not Allowed - Invalid Request Method</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="error-styles.css">
+    <link rel="stylesheet" href="405/error-styles.css">
 </head>
 <body>
     <div class="error-container">
@@ -18,30 +18,24 @@
             </svg>
         </div>
         
-        <h1 class="error-code">404</h1>
-        <h2 class="error-title">Page Not Found</h2>
+        <h1 class="error-code">405</h1>
+        <h2 class="error-title">Method Not Allowed</h2>
         <p class="error-message">
-            The page you're looking for doesn't exist or has been moved.
-            You may have mistyped the address or the page may have been removed.
+            The request method is not supported for this resource.
         </p>
         
-        <div class="search-box">
-            <input type="text" placeholder="Search our website...">
-            <button type="submit">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-            </button>
-        </div>
-        
         <div class="error-details">
-            <strong>What you can do:</strong>
+            <strong>What happened?</strong>
             <ul>
-                <li>Check the URL for typos</li>
-                <li>Use the search above to find what you need</li>
-                <li>Browse from our homepage</li>
-                <li>Report a broken link if you followed one</li>
+                <li>You tried to use an HTTP method that's not allowed for this URL</li>
+                <li>This is typically a configuration issue on the server</li>
+                <li>The request was understood but intentionally rejected</li>
             </ul>
+        </div>
+
+        <div class="allowed-methods">
+            <strong>Allowed Methods:</strong> 
+            <code>GET</code>, <code>POST</code>, <code>HEAD</code>
         </div>
         
         <div class="action-buttons">
@@ -60,7 +54,7 @@
         </div>
         
         <div class="contact-support">
-            Can't find what you need? <a href="mailto:support@example.com">Contact our support team</a>
+            If you believe this is an error, please <a href="mailto:support@example.com">contact our support team</a>.
         </div>
     </div>
 </body>
