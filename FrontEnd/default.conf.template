@@ -44,6 +44,7 @@ server {
 
     # Serve custom error pages from the /error-pages/ directory.
     location /error-pages/ {
+        internal;                                   # Prevents external access to /error-pages/ directly via the URL.
         alias /usr/share/nginx/html/error-pages/;   # Path to custom error pages.
         try_files $uri =404;                        # Fallback to 404 if page not found.
     }
