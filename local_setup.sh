@@ -30,7 +30,7 @@ npm install --only=production
 cd ..
 
 echo "🐳 Building backend Docker image..."
-docker build -t elegance-backend:local -f Devops/dockerfile.backend .
+docker build -t elegance-backend:local -f BackEnd/Dockerfile BackEnd
 
 # === FRONTEND ===
 echo "📦 Installing frontend dependencies & building project..."
@@ -45,7 +45,7 @@ server backend2:8000 max_fails=3 fail_timeout=30s;|' \
 FrontEnd/default.conf.template > FrontEnd/default.conf
 
 echo "🐳 Building frontend Docker image..."
-docker build -t elegance-frontend:local -f Devops/dockerfile.frontend .
+docker build -t elegance-frontend:local -f FrontEnd/Dockerfile FrontEnd
 
 # Step 3: Stop any process using the frontend port
 echo "🔴 Stopping any process using port $frontend_port..."

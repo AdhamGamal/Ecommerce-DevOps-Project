@@ -22,7 +22,7 @@ jobs:
       - name: Build Backend Docker Image
         run: |
           echo "🐳 Building backend Docker image..."
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.BACKEND_IMAGE }}:latest -f Devops/dockerfile.backend .
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.BACKEND_IMAGE }}:latest -f BackEnd/dockerfile.backend .
           echo "✅ Backend Docker image built."
 
       - name: Log in to Docker Hub
@@ -90,7 +90,7 @@ jobs:
       - name: Build Frontend Docker Image
         run: |
           echo "🐳 Building frontend Docker image..."
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.FRONTEND_IMAGE }}:latest -f Devops/dockerfile.frontend .
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.FRONTEND_IMAGE }}:latest -f FrontEnd/dockerfile.frontend .
           echo "✅ Frontend Docker image built."
 
       - name: Log in to Docker Hub

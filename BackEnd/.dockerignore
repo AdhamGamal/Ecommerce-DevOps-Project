@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+
+Dockerfile
+.dockerignore
+
+package.json
+
+tests
+__tests__/
+coverage/
+
+*.log
+*.env
+.vscode
