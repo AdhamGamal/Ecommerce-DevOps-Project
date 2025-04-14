@@ -1,16 +1,16 @@
 provider "aws" {
   region = var.aws_region
 }
- 
+
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"]
+  owners      = ["099720109477"] # Canonical
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 }
- 
+
 resource "aws_vpc" "elegance_vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -19,7 +19,7 @@ resource "aws_vpc" "elegance_vpc" {
     Name = "Elegance-VPC"
   }
 }
- 
+
 resource "aws_subnet" "elegance_public_subnet" {
   vpc_id                  = aws_vpc.elegance_vpc.id
   cidr_block              = var.public_subnet_cidr
@@ -28,14 +28,14 @@ resource "aws_subnet" "elegance_public_subnet" {
     Name = "Elegance-Public-Subnet"
   }
 }
- 
+
 resource "aws_internet_gateway" "elegance_gw" {
   vpc_id = aws_vpc.elegance_vpc.id
   tags = {
     Name = "Elegance-IGW"
   }
 }
- 
+
 resource "aws_route_table" "elegance_rt" {
   vpc_id = aws_vpc.elegance_vpc.id
   route {
@@ -46,17 +46,17 @@ resource "aws_route_table" "elegance_rt" {
     Name = "Elegance-Route-Table"
   }
 }
- 
+
 resource "aws_route_table_association" "elegance_rta" {
   subnet_id      = aws_subnet.elegance_public_subnet.id
   route_table_id = aws_route_table.elegance_rt.id
 }
- 
+
 resource "aws_security_group" "backend_sg" {
   name        = "backend-sg"
   description = "Security group for backend services"
   vpc_id      = aws_vpc.elegance_vpc.id
- 
+
   ingress {
     from_port   = 22
     to_port     = 22
@@ -77,71 +77,78 @@ resource "aws_security_group" "backend_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   ingress {
     from_port   = 3001
     to_port     = 3001
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   ingress {
     from_port   = 9100
     to_port     = 9100
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   tags = {
     Name = "Elegance-Backend-SG"
   }
 }
- 
+
 resource "aws_security_group" "frontend_sg" {
   name        = "frontend-sg"
   description = "Security group for frontend services"
   vpc_id      = aws_vpc.elegance_vpc.id
- 
+
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.ssh_access_cidr]
   }
- 
+
+  ingress {
+    from_port       = var.backend_port
+    to_port         = var.backend_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.backend_sg.id]
+  }
+
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   tags = {
     Name = "Elegance-Frontend-SG"
   }
 }
- 
+
 resource "aws_instance" "elegance_backend" {
   count                  = var.backend_instance_count
   ami                    = data.aws_ami.ubuntu.id
@@ -153,7 +160,7 @@ resource "aws_instance" "elegance_backend" {
     Name = "Elegance-Backend-${count.index + 1}"
   }
 }
- 
+
 resource "aws_instance" "elegance_frontend" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
