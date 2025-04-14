@@ -4,7 +4,7 @@ provider "aws" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477"]
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
@@ -52,26 +52,22 @@ resource "aws_route_table_association" "elegance_rta" {
   route_table_id = aws_route_table.elegance_rt.id
 }
 
-resource "aws_security_group" "backend_sg" {
-  name        = "backend-sg"
-  description = "Security group for backend services"
+# FRONTEND SECURITY GROUP (Grafana + Prometheus)
+resource "aws_security_group" "frontend_sg" {
+  name        = "frontend-sg"
+  description = "Security group for frontend (Grafana/Prometheus)"
   vpc_id      = aws_vpc.elegance_vpc.id
 
   ingress {
+    description = "SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.ssh_access_cidr]
   }
- 
+
   ingress {
-    from_port   = var.backend_port
-    to_port     = var.backend_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
- 
-  ingress {
+    description = "Prometheus"
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
@@ -79,60 +75,9 @@ resource "aws_security_group" "backend_sg" {
   }
 
   ingress {
-    from_port   = 3001
-    to_port     = 3001
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 9100
-    to_port     = 9100
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "Elegance-Backend-SG"
-  }
-}
-
-resource "aws_security_group" "frontend_sg" {
-  name        = "frontend-sg"
-  description = "Security group for frontend services"
-  vpc_id      = aws_vpc.elegance_vpc.id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_access_cidr]
-  }
-
-  ingress {
-    from_port       = var.backend_port
-    to_port         = var.backend_port
-    protocol        = "tcp"
-    security_groups = [aws_security_group.backend_sg.id]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
+    description = "Grafana"
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -146,6 +91,48 @@ resource "aws_security_group" "frontend_sg" {
 
   tags = {
     Name = "Elegance-Frontend-SG"
+  }
+}
+
+# BACKEND SECURITY GROUP (Node Exporter + App Metrics)
+resource "aws_security_group" "backend_sg" {
+  name        = "backend-sg"
+  description = "Security group for backend services"
+  vpc_id      = aws_vpc.elegance_vpc.id
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.ssh_access_cidr]
+  }
+
+  ingress {
+    description     = "Backend App Port"
+    from_port       = var.backend_port
+    to_port         = var.backend_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.frontend_sg.id]
+  }
+
+  ingress {
+    description     = "Node Exporter"
+    from_port       = 9100
+    to_port         = 9100
+    protocol        = "tcp"
+    security_groups = [aws_security_group.frontend_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Elegance-Backend-SG"
   }
 }
 
