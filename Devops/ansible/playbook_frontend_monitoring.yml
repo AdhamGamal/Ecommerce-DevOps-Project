@@ -25,7 +25,7 @@
                 - targets: ['localhost:9090']
             - job_name: 'backend-apis'
               static_configs:
-                - targets: ["{{ backend_ips }}""]
+                - targets: [{% for ip in backend_ips.split() %}"{{ ip }}"{% if not loop.last %}, {% endif %}{% endfor %}]
 
     - name: Run Prometheus container
       docker_container:
