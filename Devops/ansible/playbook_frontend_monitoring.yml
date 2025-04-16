@@ -1,4 +1,6 @@
-- hosts: frontend
+---
+- name: Install Prometheus and Grafana on Frontend Remote Hosts
+  hosts: frontend
   become: yes
 
   vars:
