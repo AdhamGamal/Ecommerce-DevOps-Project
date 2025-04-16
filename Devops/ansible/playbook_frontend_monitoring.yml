@@ -1,0 +1,71 @@
+- hosts: frontend
+  become: yes
+
+  vars:
+    prometheus_container: "prometheus"
+    grafana_container: "grafana"
+  
+  tasks:
+    - name: Create Prometheus config directory
+      file:
+        path: /opt/prometheus
+        state: directory
+    - name: Create prometheus.yml config file
+      copy:
+        dest: /opt/prometheus/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+            - job_name: 'backend-apis'
+              static_configs:
+                - targets: ["{{ backend_ips }}""]
+
+    - name: Run Prometheus container
+      docker_container:
+        name: "{{ prometheus_container }}"
+        image: "prom/prometheus"
+        ports:
+          - "9090:9090"
+        volumes:
+          - "/opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+        restart_policy: always
+        state: started
+
+    - name: Verify Prometheus is running
+      shell: docker ps --filter "name={{ prometheus_container }}"
+      register: prometheus_status
+      changed_when: false
+
+    - name: Show Prometheus status
+      debug:
+        var: prometheus_status.stdout_lines
+
+    # Grafana setup
+    - name: Run Grafana container
+      docker_container:
+        name: "{{ grafana_container }}"
+        image: "grafana/grafana"
+        ports:
+          - "3000:3000"
+        restart_policy: always
+        state: started
+
+    - name: Verify Grafana is running
+      shell: docker ps --filter "name={{ grafana_container }}"
+      register: grafana_status
+      changed_when: false
+
+    - name: Show Grafana status
+      debug:
+        var: grafana_status.stdout_lines
+    
+    - name: Restart Prometheus to reload config
+      docker_container:
+        name: "{{ prometheus_container }}"
+        state: started
+        restart: yes

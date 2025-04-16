@@ -1,0 +1,81 @@
+name: Deploy to EC2 and Set Up Monitoring
+
+on:
+  workflow_run:
+    workflows: ["Deploy to EC2"]
+    types:
+      - completed
+
+env:
+  ANSIBLE_DIR: 'Devops/ansible'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Fetch EC2 Public IPs
+        id: fetch_ips
+        run: |
+          BACKEND_IPS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Elegance-Backend*" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].PublicIpAddress" --output text)
+
+          FRONTEND_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Elegance-Frontend*" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].PublicIpAddress" --output text)
+
+          echo "BACKEND_IPS=${BACKEND_IPS}" >> $GITHUB_ENV
+          echo "FRONTEND_IP=${FRONTEND_IP}" >> $GITHUB_ENV
+  
+      - name: Install Ansible
+        run: |
+          echo "📦 Installing Ansible..."
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          echo "✅ Ansible installed."
+
+      - name: Create Ansible Inventory File
+        run: |
+          # Create backend section
+          echo "[backend]" > $ANSIBLE_DIR/inventory.ini
+          # Split tab-separated IPs and write one per line
+          echo "$BACKEND_IPS" | tr '\t' '\n' | sed '/^$/d' >> $ANSIBLE_DIR/inventory.ini
+          
+          # Create frontend section
+          echo -e "\n[frontend]" >> $ANSIBLE_DIR/inventory.ini
+          echo "$FRONTEND_IP" >> $ANSIBLE_DIR/inventory.ini
+          
+          # Verify the inventory file
+          echo "Generated inventory file:"
+          cat $ANSIBLE_DIR/inventory.ini
+      
+      - name: Verify Ansible Configuration
+        run: |
+          cd $ANSIBLE_DIR
+          echo "Ansible configuration:"
+          ansible-config dump --only-changed
+          echo "Inventory contents:"
+          ansible-inventory --list -y
+
+      - name: Deploy Backend with Ansible
+        run: |
+          cd $ANSIBLE_DIR
+          ansible-playbook playbook_backendmonitoring.yml
+            
+
+      - name: Deploy Frontend with Ansible
+        run: |
+          cd $ANSIBLE_DIR
+          ansible-playbook playbook_frontend_monitoring.yml \
+            --extra-vars "backend_ips=${{ env.BACKEND_IPS }}"
